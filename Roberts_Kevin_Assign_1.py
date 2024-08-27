@@ -28,6 +28,7 @@ Created on Mon Aug 26 15:02:27 2024
 
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # approximating the differential equation
@@ -47,9 +48,39 @@ for i in range(1, n):
 
 # setting array of values for the exact solution
 
-i_c = 5 # this is the initial condition
+i_c = 100 # this is the initial condition
 
 def f(t):
-    initial_cond * math.exp()
+    return i_c * math.exp(-kr*t)
+
+
+exact_array = np.zeros(n)
+for i in range(0, n):
+    eval_at = i*delt
+    exact_array[i] = f(eval_at) 
+
+print(exact_array)
+print(array)
+
+x = np.arange(0, 100.1, 0.1)
+
+approx_array = [row[2] for row in array] # gets the third column of the array
+
+plt.plot(x, exact_array, label='Exact Solution')
+plt.plot(x, approx_array, label='Approximated Solution')
+
+# Adding a title and labels
+plt.title('Approximated Solution vs Exact Solution')
+plt.xlabel('Time')
+plt.ylabel('RL')
+
+# Adding a legend to distinguish between the arrays
+plt.legend()
+
+# Display the plot
+plt.show()
+
+
+
 
 
