@@ -71,7 +71,7 @@ plt.plot(x, approx_array, label='Approximated Solution')
 
 # Adding a title and labels
 plt.title('Approximated Solution vs Exact Solution')
-plt.xlabel('Time')
+plt.xlabel('Time in Seconds')
 plt.ylabel('RL')
 
 # Adding a legend to distinguish between the arrays
