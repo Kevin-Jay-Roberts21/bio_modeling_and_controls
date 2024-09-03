@@ -97,6 +97,17 @@ get_E_o_and_volume(enzyme_to_test)
 #    equation and evaluate it at 0, which is: 
 #    ans = k_f*E(0)*S(0) - k_r*ES(0) - k_cat*ES(0) -->
 #    ans = 0.0001*22*70 - 0.1*??? - 0.1*??? =  
+# 
+# d. 
+# 
+#
+# e.
+# 
+# 
+# f.
+# 
+# 
+# g. 
 
 
 
@@ -106,6 +117,10 @@ get_E_o_and_volume(enzyme_to_test)
 
 
 
+
+#############
+# Problem 3 #
+#############
 
 
 # defining delta_t and n
@@ -113,7 +128,7 @@ get_E_o_and_volume(enzyme_to_test)
 # approximating the differential equation with dt = 0.1
 dt = 0.1 # time interval, seconds
 n = int(100/dt)+1 # total intervals
-E_0 = enzyme_to_test # (nM)
+E_0 = enzyme_to_test # (nM) this is the value satisfied by criteria (ii)
 ES_initial = 200 # (nM) (this is an arbitrary value)
 P_initial = 10 # (nM) (this is an arbitrary value)
 S_initial = S_0 # (nM) (this is an arbitrary value)
@@ -161,15 +176,43 @@ plt.plot(x, [row[2] for row in E_array], label='E')
 plt.plot(x, [row[2] for row in S_array], label='S')
 
 # Adding a title and labels
-plt.title('Stuff')
+plt.title('Comparing ES finite difference with ES Approximation (3)')
 plt.xlabel('Time in Seconds')
 plt.ylabel('RL')
+
+# adding some scaling
+lower_y = 0
+upper_y = 200
+lower_x = 0
+upper_x = final_t
+plt.ylim(lower_y, upper_y)
+plt.xlim(lower_x, upper_x)
+
 
 # Adding a legend to distinguish between the arrays
 plt.legend()
 
 # Display the plot
 plt.show()
+
+
+
+#############
+# Problem 4 #
+#############
+
+
+#############
+# Problem 5 #
+#############
+
+
+#############
+# Problem 6 #
+#############
+
+
+
 
 
 
