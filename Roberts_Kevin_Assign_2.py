@@ -237,10 +237,20 @@ print()
 # Problem 5 #
 #############
 print("PROBLEM 5 OUTPUT:")
+# a. finding the percentage difference between the end value of ES finite difference
+#    method and the ES mich method:
+perc_diff_models = 100*np.abs(ES_array[n-1, 2] - ES_array[n-1, 3])/((ES_array[n-1, 2] + ES_array[n-1, 3])/2)
+print("The percentage difference between at the final time is: " + str(perc_diff_models))
 
-
-
-
+# b. this percentance difference is very high. This means that one value is a lot
+#    larger than the other, and from the graph, we see that the value at the end 
+#    time for the ES Mich is a lot larger than what the ES fin diff gets to.
+# c. below I've calculated the percentage difference for final_t and t_qssa
+perc_diff_times = 100*np.abs(final_t - t_qssa)/((final_t + t_qssa)/2)
+print("The percentage difference for the times is: " + str(perc_diff_times))
+# d. The reason why the time difference is so large here may be because of the 
+#    fact that t_qssa is an exponential time constand for the quasi-steady state
+#    and the final time is a percentage of t_qssa (final_t = -t_qssa*ln(0.01))
 print()
 print()
 
