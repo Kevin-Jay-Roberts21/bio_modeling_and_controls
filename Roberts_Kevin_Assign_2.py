@@ -136,8 +136,8 @@ print("PROBLEM 2 OUTPUT:")
 #    n = (final_t/dt) + 1 = 
 
 ES_quasi = E_0*S_0/(k_m + S_0)
-t_qssa = k_f*(k_m + S_0)
-dt = 0.01
+t_qssa = (k_f*(k_m + S_0))**(-1)
+dt = 0.1
 print("The following is value of ES steady state when S increases by a nM, 2nM, and 3nM:")
 print("Original ES: " + str(ES_quasi))
 print("ES plus one nM: " + str(E_0*(S_0 + (10**(-9)))/(k_m + S_0 + (10**(-9)))))
@@ -241,16 +241,22 @@ print("PROBLEM 5 OUTPUT:")
 #    method and the ES mich method:
 perc_diff_models = 100*np.abs(ES_array[n-1, 2] - ES_array[n-1, 3])/((ES_array[n-1, 2] + ES_array[n-1, 3])/2)
 print("The percentage difference between at the final time is: " + str(perc_diff_models))
-
-# b. this percentance difference is very high. This means that one value is a lot
-#    larger than the other, and from the graph, we see that the value at the end 
-#    time for the ES Mich is a lot larger than what the ES fin diff gets to.
-# c. below I've calculated the percentage difference for final_t and t_qssa
-perc_diff_times = 100*np.abs(final_t - t_qssa)/((final_t + t_qssa)/2)
+# b. this percentance difference is about one. This means that the values are 
+#    are nearly identitcal, (the end point values anyway)
+# c. below I've calculated the percentage difference for tau and t_qssa, but 
+#    first, I calculated what tau is:
+ctr = 0
+for k in range(n):
+    if ES_array[k, 2]>=0.5*(ES_array[n-1, 2]) and ctr == 0:
+        t1_2 = ES_array[k, 1]
+        tau = t1_2/np.log(2)
+        ctr = 1
+perc_diff_times = 100*np.abs(tau - t_qssa)/((tau + t_qssa)/2)
 print("The percentage difference for the times is: " + str(perc_diff_times))
 # d. The reason why the time difference is so large here may be because of the 
-#    fact that t_qssa is an exponential time constand for the quasi-steady state
-#    and the final time is a percentage of t_qssa (final_t = -t_qssa*ln(0.01))
+#    fact that t_qssa is slightly later time that the time tau that we calculated. 
+#    If the times were the same, or close together, then we'd have a percentage
+#    difference that is closer to 1.
 print()
 print()
 
