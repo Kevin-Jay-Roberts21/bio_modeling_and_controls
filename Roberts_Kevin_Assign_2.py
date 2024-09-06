@@ -24,17 +24,17 @@ r = 5*(10**4) # (1/(M*s)) the ratio k_cat/k_m
 k_m = k_cat/r # (M) since we know that k_cat/k_m = 5*10^4 (1/(M*s))
 k_r = k_cat*k_f/r - k_cat # (1/s) using the fact that k_m = (k_r+k_cat)/k_f
 
-E_out = 70*(10**(-9)) # (M) molars
+E_initial = 70*(10**(-9)) # (M) molars
 S_initial = 200*(10**(-9)) # (M) molars
 V_i = 70 # (microliters)
 
 # verifying the (i) condition
-def check_i_condition(E_o):
+def check_i_condition(E_input):
     
     check = False
     
     # defining the LHS and RHS of (i)
-    i_LHS = E_o/(k_m + S_initial) 
+    i_LHS = E_input/(k_m + S_initial) 
     i_RHS = (1 + k_r/k_cat)*(1 + S_initial/k_m)
     
     # multiplying the i_RHS by 0.01 because we are defining the LHS to be 
@@ -46,12 +46,12 @@ def check_i_condition(E_o):
         return check
 
 # verifying the (ii) condition
-def check_ii_condition(E_o):
+def check_ii_condition(E_input):
     
     check = False
     
     # defining the LHS and RHS of (ii)
-    ii_LHS = E_o/(k_m + S_intial)
+    ii_LHS = E_input/(k_m + S_initial)
     ii_RHS = 1    
     
     if ii_LHS < ii_RHS*0.01:
@@ -60,40 +60,28 @@ def check_ii_condition(E_o):
     else:
         return check
 
-def get_E_o_and_volume(E_o):
-    if check_i_condition(E_o) and check_i_condition(E_o):
+def get_E_input_and_volume(E_input):
+    if check_i_condition(E_input) and check_i_condition(E_input):
         print("Both (i) and (ii) are satisfied.")
         
-        # we need to solve the volume V_o of the eqn: E_o*(V_i + V_o) = E_out*V_o
-        # which is: V_o = -E_o*V_i/(E_o - E_out)
-        volume = -E_o*V_i/(E_o - E_out)
+        volume = -E_input*V_i/(E_input - E_initial)
         
-        print("The value of E_o is: " + str(E_o) + " M and the volume is: " + str(round(volume, 2)) + " microliters.")
+        print("The value of E_o is: " + str(E_input) + " M and the volume is: " + str(round(volume, 2)) + " microliters.")
     else:
         print("Either (i) or (ii) or both was not satisfied.")
         
     return volume    
         
-enzyme_to_test = 22*(10**(-9)) # (M)
+enzyme_to_test = 0.01*(k_m + S_initial) # (M)
 E_0 = enzyme_to_test
-V_add = get_E_o_and_volume(enzyme_to_test)
+V_add = get_E_input_and_volume(enzyme_to_test)
 
+S_0 = S_initial
 
-
-# Finding S_0 (iterating through to find S_0)
-S_1 = S_initial*V_i/(V_add + V_i)
-S_2 = S_1*V_i/(V_add + V_i)
-S_3 = S_2*V_i/(V_add + V_i)
-S_4 = S_3*V_i/(V_add + V_i)
-S_5 = S_4*V_i/(V_add + V_i)
-S_6 = S_5*V_i/(V_add + V_i)
-print(S_1)
-print(S_2)
-print(S_3)
-print(S_4)
-print(S_5)
-print(S_6)
-S_0 = S_6
+for i in range(3):
+    E_o = 0.01*(k_m + S_0)
+    V_add = E_0*V_i/(E_initial - E_0)
+    S_0 = S_initial*V_i/(V_i + V_add)
 
 print()
 print()
@@ -253,7 +241,7 @@ for k in range(n):
         ctr = 1
 perc_diff_times = 100*np.abs(tau - t_qssa)/((tau + t_qssa)/2)
 print("The percentage difference for the times is: " + str(perc_diff_times))
-# d. The reason why the time difference is so large here may be because of the 
+# d. The reason why the time difference is a little large here may be because of the 
 #    fact that t_qssa is slightly later time that the time tau that we calculated. 
 #    If the times were the same, or close together, then we'd have a percentage
 #    difference that is closer to 1.
