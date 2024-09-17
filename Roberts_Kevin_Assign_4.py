@@ -217,6 +217,8 @@ plt.show()
 
 # a) Determine dt
 
+
+
 # b) Solve for [cGMP](t) using equation 3
 
 # c) Examine parametric sensitivity of [cGMP](t) to k_R and k_E in terms of precision and response time
