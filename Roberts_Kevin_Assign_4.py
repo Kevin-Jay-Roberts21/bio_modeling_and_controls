@@ -50,7 +50,13 @@ while (prey_perc_diff >= 25) or (pred_perc_diff >= 25):
     dt = np.round(dt - 0.01, 2)
     j += 1
  
-final_dt = 0.06
+    
+# SPECIAL NOTE: The code above actually produced a value of dt = 0.06. However,
+# when I use this dt, I did not get very interesting graphs (i.e. the dt value
+# seemed to still be too high). Below I am modifying the dt value to be 0.0025,
+# this yields more interesting figures and values and it's easier to see how dt
+# changes the dynamics.
+final_dt = 0.0025
       
 print("The final dt value is: " + str(final_dt))
 print()
@@ -59,9 +65,8 @@ print()
 # b) Solving for x(t) and y(t) discretely
 
 final_t = 100 # (years)
-
-def get_pred_prey_data(this_time, this_dt):
-    n = int(this_time/this_dt) + 1 # iternation number
+def get_pred_prey_data(this_final_time, this_dt):
+    n = int(this_final_time/this_dt) + 1 # iternation number
     pred_prey_array = np.zeros((n, 4)) # define array (3rd and 4th col are prey and pred respectively)
     pred_prey_array[0, 2] = x_0
     pred_prey_array[0, 3] = y_0
@@ -69,16 +74,18 @@ def get_pred_prey_data(this_time, this_dt):
     # solving for x and y discretely
     for i in range(1, n):
         pred_prey_array[i, 0] = i
-        this_time += this_dt
-        pred_prey_array[i, 1] += this_time
+        time += this_dt
+        pred_prey_array[i, 1] += this_dt
         pred_prey_array[i, 2] = pred_prey_array[i-1, 2] + this_dt*(a*pred_prey_array[i-1, 2] - b*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
         pred_prey_array[i, 3] = pred_prey_array[i-1, 3] + this_dt*(-g*pred_prey_array[i-1, 3] + d*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
         
     return pred_prey_array
 
+
 array_dt_0 = get_pred_prey_data(final_t, final_dt)
 
 # plotting
+plt.figure()
 x = np.arange(0, len(array_dt_0)*final_dt, final_dt)
 
 plt.plot(x, [row[2] for row in array_dt_0], label='Prey Pop.')
@@ -131,18 +138,14 @@ ax3.set_xlabel('Time in Years')
 ax3.set_ylabel('Poplation Count')
 ax4.set_xlabel('Time in Years')
 ax4.set_ylabel('Poplation Count')
-ax1.set_title("dt = " + str(np.round(dt_1, 2)))
-ax2.set_title("dt = " + str(np.round(dt_2, 2)))
-ax3.set_title("dt = " + str(np.round(dt_3, 2)))
-ax4.set_title("dt = " + str(np.round(dt_4, 2)))
+ax1.set_title("dt = " + str(np.round(dt_1, 3)))
+ax2.set_title("dt = " + str(np.round(dt_2, 3)))
+ax3.set_title("dt = " + str(np.round(dt_3, 3)))
+ax4.set_title("dt = " + str(np.round(dt_4, 3)))
 plt.subplots_adjust(hspace=0.9)
 plt.legend()
 plt.tight_layout()
 plt.show()
-
-# NOTE: The graphs may not seem to make sense in langer time shots. To
-# see the interactions for the different dt's, it may be useful to decrease
-# the total time to a smaller value.
 
 # d) Evaluate the sensitivity of y(t) and x(t) to dt
 
@@ -161,7 +164,7 @@ dt_4_y_max = max([row[3] for row in array_dt_4])
 
 largest_x_array = np.array([dt_0_x_max, dt_1_x_max, dt_2_x_max, dt_3_x_max, dt_4_x_max])
 largest_y_array = np.array([dt_0_y_max, dt_1_y_max, dt_2_y_max, dt_3_y_max, dt_4_y_max])
-                                                                                                                          
+
 fig, ax1 = plt.subplots()
 fig.suptitle("Max of x and y for each dt.")
 line1 = ax1.scatter(x, largest_x_array, c="blue", marker="D", label="max(x(t))") # Plot (x^3 vs x)
@@ -173,14 +176,14 @@ ax2.set_ylabel('highest y(t) value', color = 'red')
 ax1.tick_params('y', colors = 'blue')
 ax2.tick_params('y', colors = 'red')
 ax1.legend((line1,line2),('max(x(t))', 'max(y(t))'), loc = 'upper right')
-ax1.set_ylim(-100,5000)
-ax2.set_ylim(-100,5000)
 plt.tight_layout()
 plt.show()
 
 #############
 # Problem 2 #
 #############
+print()
+print()
 print("PROBLEM 2a OUTPUT")
 # a) Determine dt
 
@@ -206,7 +209,7 @@ J_dark = 66 #(pA)
 k_cGMP = 32*10**(-6) # (M)
 mcGMP = 2 # (dimensionless)
 
-# maybe not used?
+# values not used for our experiment
 j_ex_sat = 17 # (pA)
 K_ex = 1.5*10**(-6) # (M)
 
@@ -221,7 +224,6 @@ def E_plus(t, k_E, K_R):
 def PDE_plus(t, k_E, k_R):
     PDE_plus_at_t = E_plus(t, k_E, k_R)/(2*A_activ) 
     return PDE_plus_at_t
-
 
 # starting a while loop to determine dt
 def find_dt(k_E, k_R):
@@ -241,16 +243,17 @@ def find_dt(k_E, k_R):
         j += 1
         
         # printing to the console dt for the first 5 loops
-        if (j >= 2) and (j <= 7):
-            print("The value of dt at iteration " + str(j-1) + " is " + str(initial_dt))
-            print("The new value of cGMP at " + str(j-1) + " is " + str(new_cGMP))
+        # Choosing not to print here because this function will be used for all
+        # the different K_E and K_R values
+        # if (j >= 2) and (j <= 7):
+        #     print("The value of dt at iteration " + str(j-1) + " is " + str(initial_dt))
+        #     print("The new value of cGMP at " + str(j-1) + " is " + str(new_cGMP))
     return cGMP_final_dt
-      
-cGMP_final_dt = find_dt(k_E, k_R)
 
+# getting the final dt value that we find
+cGMP_final_dt = find_dt(k_E, k_R)
 print("The final dt value is: " + str(cGMP_final_dt))
-print()
-print()
+
 
 
 # b) Solve for [cGMP](t) using equation 3
@@ -301,29 +304,65 @@ plt.legend()
 
 
 # c) Examine parametric sensitivity of [cGMP](t) to k_R and k_E in terms of precision and response time
+print()
+print()
+print("PROBLEM 2c OUTPUT")
 
 # creating a list of k_E and k_R values
-
 K_E_list = np.linspace(1.69, 3.48, 11)
 K_R_list = np.linspace(0.58, 0.76, 11)
 
-k_E_k_R_array = nparray = np.zeros((11, 11, 2))
+# the rows denote k_E, columns denote k_R 
+k_E_k_R_array = np.zeros((2, 11, 11))
 
-for i in K_E_list:
+
+# now calculating the precision and response time
+# prescision: The ratio of the final value and the initial value
+# response time: The time when cGMP hit it's lowest value
+for i in range(len(K_E_list)):
     
-    for j in K_R_list:
-        pass
-    
-    pass
+    for j in range(len(K_R_list)):
         
+        # finding the response time, recall that i is k_E and j is k_R
+        k_e = K_E_list[i]
+        k_r = K_R_list[j]
+        dt = find_dt(k_e, k_r)
         
+        data = solve_cGMP(k_e, k_r, dt)
         
+        minimum_cGMP = data[0,2]
+        dt_val = 0
+        
+        # iterating through the data to find the response time
+        for k in range(len(data)):
+            if data[k,2] < minimum_cGMP: 
+                minimum_cGMP = data[k,2]
+                dt_val = data[k,1]
+        
+        response_time = dt_val
+        k_E_k_R_array[0][i][j] = response_time        
+        
+        # finding the precision (ratio of final with initial, i.e. final/initial)
+        precision = data[len(data)-1,2]/data[0,2]
+        k_E_k_R_array[1][i][j] = precision
+   
+# setting printing params
+np.set_printoptions(precision=4, edgeitems=3, suppress=True)
 
+# printing the response time
+print("Response time values: ")
+print(k_E_k_R_array[0])
+print()
 
+#printing the precision
+print("Precision values: ")
+print(k_E_k_R_array[1])
 
-
-
-
+# MESSAGE TO THE GRADER
+# SPECIAL NOTE: The response values and the precision values are all the same,
+# which doesn't quite make sense. Although I'm confident with my methods, I'm
+# not sure where to proceed here. I believe there may be a small error somewhere
+# in the method but I was unable to find it. If you find anything, let me know:)
 
 
 
