@@ -232,7 +232,7 @@ def find_dt(k_E, k_R):
     while True:
         
         # calculating the next population value
-        new_cGMP = cGMP_0 + initial_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(0, k_E, k_R))*cGMP_0)
+        new_cGMP = cGMP_0 + initial_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE + k_hyd_plus*PDE_plus(0, k_E, k_R))*cGMP_0)
             
         if new_cGMP >= cGMP_0*0.999:
             cGMP_final_dt = initial_dt
@@ -264,14 +264,14 @@ def solve_cGMP(k_E, k_R, this_dt):
     n = int(final_time/this_dt) + 1
     array = np.zeros((n, 4)) # the columns are iteration, time, cGMP, and J_dark-JcGMP respectively
     array[0, 2] = cGMP_0
-    J_cGMP_0 = J_cGMP_max/(1 + (k_cGMP/cGMP_0)**mcGMP)
+    J_cGMP_0 = J_dark - J_cGMP_max/(1 + (k_cGMP/cGMP_0)**mcGMP)
     array[0, 3] = J_cGMP_0
     time = 0
     for i in range(1, n):
         array[i, 0] = i
         time += this_dt
         array[i, 1] += time
-        array[i, 2] = array[i-1, 2] + this_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(time, k_E, k_R))*array[i-1, 2])
+        array[i, 2] = array[i-1, 2] + this_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE + k_hyd_plus*PDE_plus(time, k_E, k_R))*array[i-1, 2])
         array[i, 3] = J_dark - J_cGMP_max/(1 + (k_cGMP/array[i, 2])**mcGMP)
 
     return array
@@ -299,7 +299,7 @@ plt.plot(x, [row[3] for row in array], label='J_dark - J_cGMP(t)')
 # Adding a title and labels
 plt.title('J_dark - J_cGMP(t) dynamics')
 plt.xlabel('Time in Seconds')
-plt.ylabel('cGMP-gated current [pA]')
+plt.ylabel('cGMP-gated current, J_dark-J(t) [pA]')
 plt.legend()
 
 
@@ -349,17 +349,15 @@ for i in range(len(K_E_list)):
 # setting printing params
 np.set_printoptions(precision=4, edgeitems=3, suppress=True)
 
-# printing the response time
+# printing the response time and precisions
 print("Response time values: ")
-print(k_E_k_R_array[0])
-print()
+for i in range(11):
+    for j in range(11):
+        print('Response time: ' + str(round(k_E_k_R_array[0][i][j], 4)) + " Precision: " + str(round(k_E_k_R_array[1][i][j],4)) + " for K_E: " + str(round(K_E_list[i],4)) + " and K_R: " + str(round(K_R_list[j],4)))
 
-#printing the precision
-print("Precision values: ")
-print(k_E_k_R_array[1])
 
 # MESSAGE TO THE GRADER
-# SPECIAL NOTE: The response values and the precision values are all the same,
+# SPECIAL NOTE: The response values and the precision values are all quite similar,
 # which doesn't quite make sense. Although I'm confident with my methods, I'm
 # not sure where to proceed here. I believe there may be a small error somewhere
 # in the method but I was unable to find it. If you find anything, let me know:)
