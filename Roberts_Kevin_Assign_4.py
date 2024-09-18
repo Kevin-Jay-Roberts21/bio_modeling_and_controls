@@ -217,8 +217,76 @@ plt.show()
 
 # a) Determine dt
 
+# first I'll deine all the parameters being used
+alpha_max = 50*10**(-6) # (M/s)
+alpha_min = 1*10**(-6) # (M/s)
+Ca = 0.66*10**(-6) # (M)
+K_cyc = 0.135*10**(-6) # (M)
+m_cyc = 2 # (dimensionless)
+alpha = alpha_min + (alpha_max-alpha_min)/(1 + (Ca/K_cyc)**(m_cyc)) # (M/s)
+V_cyt = 1076 # (um^3)
+A_disc = V_cyt/0.007 # (um)
+k_hyd = 7*10**(-5) # (um^3/s)
+k_hyd_plus = 1*10**(-5) # (um^3/s)
+PDE = 100 # (um^(-2))
+J_dark = 66 #(pA)
+A_activ = 800*np.pi*(5.5**(2)) # (um^2)
+v_RE = 195 # (1/s)
+k_R = 2.6 # (1/s)
+k_E = 0.6 # (1/s)
+phi = 1 # (dimensionless)
+J_cGMP_max = 7*10**(3) # (pA)
+k_cGMP = 32*10**(-6) # (M)
+mcGMP = 2 # (dimensionless)
+
+cGMP_0 = 3*10**(-6) # (M)
+
+def E_plus(t):
+    E_at_t = phi*v_RE/(k_R - k_E)*(np.e**(-k_E*t) - np.e**(-k_R*t))        
+    return E_at_t
+
+def PDE_plus(t):
+    PDE_plus_at_t = E_plus(t)/(2*A_activ) 
+    return PDE_plus_at_t
+
+
+j = 2
+initial_dt = 0.2
+
+# starting a while loop to determine dt
+while True:
+    
+    # calculating the next population value
+    new_cGMP = cGMP_0 + initial_dt*(alpha - A_disc/V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(0))*cGMP_0)
+        
+    if new_cGMP >= cGMP_0*0.999:
+        cGMP_final_dt = initial_dt
+        break
+    
+    # decreasing dt by 0.01 for each loop
+    initial_dt = np.round(initial_dt - 0.01, 2)
+    j += 1
+    
+    # printing to the console dt for the first 5 loops
+    if (j >= 2) and (j <= 7):
+        print("The value of dt at iteration " + str(j-1) + " is " + str(initial_dt))
+        print("The new value of cGMP at " + str(j-1) + " is " + str(new_cGMP))
+ 
+      
+print("The final dt value is: " + str(cGMP_final_dt))
+print()
+print()
 
 
 # b) Solve for [cGMP](t) using equation 3
+
+
+
+
+
+
+
+
+
 
 # c) Examine parametric sensitivity of [cGMP](t) to k_R and k_E in terms of precision and response time
