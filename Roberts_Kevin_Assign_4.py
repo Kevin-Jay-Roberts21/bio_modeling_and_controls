@@ -60,8 +60,8 @@ print()
 
 final_t = 100 # (years)
 
-def get_pred_prey_data(time, dt):
-    n = int(time/dt) + 1 # iternation number
+def get_pred_prey_data(this_time, this_dt):
+    n = int(this_time/this_dt) + 1 # iternation number
     pred_prey_array = np.zeros((n, 4)) # define array (3rd and 4th col are prey and pred respectively)
     pred_prey_array[0, 2] = x_0
     pred_prey_array[0, 3] = y_0
@@ -69,10 +69,10 @@ def get_pred_prey_data(time, dt):
     # solving for x and y discretely
     for i in range(1, n):
         pred_prey_array[i, 0] = i
-        time += dt
-        pred_prey_array[i, 1] += time
-        pred_prey_array[i, 2] = pred_prey_array[i-1, 2] + dt*(a*pred_prey_array[i-1, 2] - b*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
-        pred_prey_array[i, 3] = pred_prey_array[i-1, 3] + dt*(-g*pred_prey_array[i-1, 3] + d*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
+        this_time += this_dt
+        pred_prey_array[i, 1] += this_time
+        pred_prey_array[i, 2] = pred_prey_array[i-1, 2] + this_dt*(a*pred_prey_array[i-1, 2] - b*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
+        pred_prey_array[i, 3] = pred_prey_array[i-1, 3] + this_dt*(-g*pred_prey_array[i-1, 3] + d*pred_prey_array[i-1, 2]*pred_prey_array[i-1, 3])
         
     return pred_prey_array
 
@@ -100,26 +100,10 @@ dt_2 = np.round(final_dt*(3**2), 2)
 dt_3 = np.round(final_dt*(3**3), 2)
 dt_4 = np.round(final_dt*(3**4), 2)
 
-print(dt_0)
-print(dt_1)
-print(dt_2)
-print(dt_3)
-print(dt_4)
-
-
-
-
-
-
 array_dt_1 = get_pred_prey_data(final_t, dt_1)
 array_dt_2 = get_pred_prey_data(final_t, dt_2)
 array_dt_3 = get_pred_prey_data(final_t, dt_3)
 array_dt_4 = get_pred_prey_data(final_t, dt_4)
-
-
-print(array_dt_2)
-
-
 
 # plotting 4 subplots
 x_dt_1 = np.arange(0, len(array_dt_1)*dt_1, dt_1)
@@ -160,8 +144,6 @@ plt.show()
 # see the interactions for the different dt's, it may be useful to decrease
 # the total time to a smaller value.
 
-
-
 # d) Evaluate the sensitivity of y(t) and x(t) to dt
 
 x = np.array([dt_0, dt_1, dt_2, dt_3, dt_4])
@@ -177,18 +159,8 @@ dt_2_y_max = max([row[3] for row in array_dt_2])
 dt_3_y_max = max([row[3] for row in array_dt_3])
 dt_4_y_max = max([row[3] for row in array_dt_4])
 
-
-
-
-
-
 largest_x_array = np.array([dt_0_x_max, dt_1_x_max, dt_2_x_max, dt_3_x_max, dt_4_x_max])
 largest_y_array = np.array([dt_0_y_max, dt_1_y_max, dt_2_y_max, dt_3_y_max, dt_4_y_max])
-                    
-print(largest_x_array)
-print(largest_y_array)
-
-
                                                                                                                           
 fig, ax1 = plt.subplots()
 fig.suptitle("Max of x and y for each dt.")
@@ -206,73 +178,76 @@ ax2.set_ylim(-100,5000)
 plt.tight_layout()
 plt.show()
 
-
-
-
-
-
 #############
 # Problem 2 #
 #############
-
+print("PROBLEM 2a OUTPUT")
 # a) Determine dt
 
-# first I'll deine all the parameters being used
-alpha_max = 50*10**(-6) # (M/s)
-alpha_min = 1*10**(-6) # (M/s)
+# first I'll define all the parameters being used
+A_activ = 800*np.pi*(5.5**(2)) # (um^2)
+A_disc_over_V_cyt = 1/0.007 # (1/um)
 Ca = 0.66*10**(-6) # (M)
 K_cyc = 0.135*10**(-6) # (M)
-m_cyc = 2 # (dimensionless)
-alpha = alpha_min + (alpha_max-alpha_min)/(1 + (Ca/K_cyc)**(m_cyc)) # (M/s)
-V_cyt = 1076 # (um^3)
-A_disc = V_cyt/0.007 # (um)
-k_hyd = 7*10**(-5) # (um^3/s)
-k_hyd_plus = 1*10**(-5) # (um^3/s)
-PDE = 100 # (um^(-2))
-J_dark = 66 #(pA)
-A_activ = 800*np.pi*(5.5**(2)) # (um^2)
-v_RE = 195 # (1/s)
-k_R = 2.6 # (1/s)
 k_E = 0.6 # (1/s)
+k_hyd = 7*10**(-5) # (um^3/s)
+k_hyd_plus = 1 # (um^3/s)
+k_R = 2.6 # (1/s)
+m_cyc = 2 # (dimensionless)
+PDE = 100 # (um^(-2))
+V_cyt = 1076 # (um^3)
+v_RE = 195 # (1/s)
+alpha_max = 50*10**(-6) # (M/s)
+alpha_min = 1*10**(-6) # (M/s)
+alpha = alpha_min + (alpha_max-alpha_min)/(1 + (Ca/K_cyc)**(m_cyc)) # (M/s)
 phi = 1 # (dimensionless)
 J_cGMP_max = 7*10**(3) # (pA)
+J_dark = 66 #(pA)
 k_cGMP = 32*10**(-6) # (M)
 mcGMP = 2 # (dimensionless)
 
+# maybe not used?
+j_ex_sat = 17 # (pA)
+K_ex = 1.5*10**(-6) # (M)
+
 cGMP_0 = 3*10**(-6) # (M)
 
-def E_plus(t):
-    E_at_t = phi*v_RE/(k_R - k_E)*(np.e**(-k_E*t) - np.e**(-k_R*t))        
+# defining the E+ function
+def E_plus(t, k_E, K_R):
+    E_at_t = phi*v_RE/(k_R - k_E)*(np.exp(-k_E*t) - np.exp(-k_R*t))        
     return E_at_t
 
-def PDE_plus(t):
-    PDE_plus_at_t = E_plus(t)/(2*A_activ) 
+# defining the PDE+ function
+def PDE_plus(t, k_E, k_R):
+    PDE_plus_at_t = E_plus(t, k_E, k_R)/(2*A_activ) 
     return PDE_plus_at_t
 
 
-j = 2
-initial_dt = 0.2
-
 # starting a while loop to determine dt
-while True:
-    
-    # calculating the next population value
-    new_cGMP = cGMP_0 + initial_dt*(alpha - A_disc/V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(0))*cGMP_0)
+def find_dt(k_E, k_R):
+    j = 2
+    initial_dt = 0.2
+    while True:
         
-    if new_cGMP >= cGMP_0*0.999:
-        cGMP_final_dt = initial_dt
-        break
-    
-    # decreasing dt by 0.01 for each loop
-    initial_dt = np.round(initial_dt - 0.01, 2)
-    j += 1
-    
-    # printing to the console dt for the first 5 loops
-    if (j >= 2) and (j <= 7):
-        print("The value of dt at iteration " + str(j-1) + " is " + str(initial_dt))
-        print("The new value of cGMP at " + str(j-1) + " is " + str(new_cGMP))
- 
+        # calculating the next population value
+        new_cGMP = cGMP_0 + initial_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(0, k_E, k_R))*cGMP_0)
+            
+        if new_cGMP >= cGMP_0*0.999:
+            cGMP_final_dt = initial_dt
+            break
+        
+        # decreasing dt by 0.01 for each loop
+        initial_dt = np.round(initial_dt - 0.01, 2)
+        j += 1
+        
+        # printing to the console dt for the first 5 loops
+        if (j >= 2) and (j <= 7):
+            print("The value of dt at iteration " + str(j-1) + " is " + str(initial_dt))
+            print("The new value of cGMP at " + str(j-1) + " is " + str(new_cGMP))
+    return cGMP_final_dt
       
+cGMP_final_dt = find_dt(k_E, k_R)
+
 print("The final dt value is: " + str(cGMP_final_dt))
 print()
 print()
@@ -280,13 +255,82 @@ print()
 
 # b) Solve for [cGMP](t) using equation 3
 
+final_time = 10 # (seconds)
 
+def solve_cGMP(k_E, k_R, this_dt):
+    n = int(final_time/this_dt) + 1
+    array = np.zeros((n, 4)) # the columns are iteration, time, cGMP, and J_dark-JcGMP respectively
+    array[0, 2] = cGMP_0
+    J_cGMP_0 = J_cGMP_max/(1 + (k_cGMP/cGMP_0)**mcGMP)
+    array[0, 3] = J_cGMP_0
+    time = 0
+    for i in range(1, n):
+        array[i, 0] = i
+        time += this_dt
+        array[i, 1] += time
+        array[i, 2] = array[i-1, 2] + this_dt*(alpha - A_disc_over_V_cyt*(k_hyd*PDE - k_hyd_plus*PDE_plus(time, k_E, k_R))*array[i-1, 2])
+        array[i, 3] = J_dark - J_cGMP_max/(1 + (k_cGMP/array[i, 2])**mcGMP)
 
+    return array
 
+array = solve_cGMP(k_E, k_R, cGMP_final_dt)
 
+plt.figure()
+x = np.arange(0, len(array)*cGMP_final_dt, cGMP_final_dt)
 
+plt.plot(x, [row[2] for row in array], label='cGMP')
+# plt.plot(x, [row[3] for row in array], label='J_dark - J_cGMP(t)')
 
+# Adding a title and labels
+plt.title('cGMP feedback control')
+plt.xlabel('Time in Seconds')
+plt.ylabel('cGMP concentration [M]')
+plt.legend()
 
+plt.figure()
+x = np.arange(0, len(array)*cGMP_final_dt, cGMP_final_dt)
+
+plt.plot(x, [row[3] for row in array], label='J_dark - J_cGMP(t)')
+# plt.plot(x, [row[3] for row in array], label='J_dark - J_cGMP(t)')
+
+# Adding a title and labels
+plt.title('J_dark - J_cGMP(t) dynamics')
+plt.xlabel('Time in Seconds')
+plt.ylabel('cGMP-gated current [pA]')
+plt.legend()
 
 
 # c) Examine parametric sensitivity of [cGMP](t) to k_R and k_E in terms of precision and response time
+
+# creating a list of k_E and k_R values
+
+K_E_list = np.linspace(1.69, 3.48, 11)
+K_R_list = np.linspace(0.58, 0.76, 11)
+
+k_E_k_R_array = nparray = np.zeros((11, 11, 2))
+
+for i in K_E_list:
+    
+    for j in K_R_list:
+        pass
+    
+    pass
+        
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
