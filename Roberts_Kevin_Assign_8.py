@@ -9,13 +9,13 @@ Created on Fri Oct 11 14:28:53 2024
 import matplotlib.pyplot as plt
 import numpy as np
 
+np.set_printoptions(precision=3, edgeitems=3, suppress=True)
+
 #############
 # PROBLEM 1 #
 #############
 
 # a) console output
-p = [0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30] # all in (m)
-
 def get_agar_data(total_x):
 
     # defining variables
@@ -37,7 +37,7 @@ def get_agar_data(total_x):
     dt = round(dt_max, 3)
     Fo_m = D*dt/(dx**2)
     
-    maximum = 60
+    maximum = 90
     save_step = 15
     interval_steps = int(save_step / dt)
     S = int(maximum / save_step) + 1
@@ -50,7 +50,7 @@ def get_agar_data(total_x):
     data[0] = c[1]
     
     # printing the first time
-    print(f"Day 0: Minimum mass = {np.min(c[1]):.4f} g/L")
+    #print(f"Day 0: Minimum mass = {np.min(c[1]):.4f} g/L")
     step_saved = 1
     
     # adding the glucose on the side 
@@ -91,15 +91,16 @@ def get_agar_data(total_x):
         
         # saving the data every 15 steps
         if loop_counter % interval_steps == 0:
-            data[step_saved] = c[1,:,:]
-            minimum = np.min(c[1,:,:])
-            print(f"Day {int(time)}: Minimum mass concentration = {minimum:.4f} g/L")
+            data[step_saved] = c[1]
+            minimum = np.min(c[1])
+            #print(f"Day {int(time)}: Minimum mass concentration = {minimum:.4f} g/L")
             step_saved += 1
-    
-        # Check if all agar has at least target concentration
+        
+        i# Check if all agar has at least target concentration
         if np.all(c[1,:,:] >= C_f):
-            print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+            #print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
             break
+        
     
     information = [c, data, time, loop_counter]
     
@@ -108,11 +109,18 @@ def get_agar_data(total_x):
 # data for different p's
 diff_p_data = []
 
+p = [0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30] # all in (m)
+
+print("PROBELM 1a OUTPUT:")
 for i in range(len(p)):
     
-    p_data = get_agar_data(0.2+p[i])
+    x_length = 0.2+p[i]
+    p_data = get_agar_data(x_length)
     
     diff_p_data.append(p_data)
+    print("x[m]: " + str(round(p_data[0][:,1][1][len(p_data[0][:,1][1])-1],3)) + ", aspect ratio: " + str(int(x_length*100)) + "x10x1," + " final time: " + str(round(p_data[2],3)) + ", perc diff: " + str(1))
+
+
 
 
 

@@ -32,19 +32,9 @@ corner = dx**2/(4*D*(1 + Sh))
 dt_maxes = [interior, side, corner] 
 dt_max = min(dt_maxes)
 dt = round(dt_max, 3)
-
-
 Fo_m = D*dt/(dx**2)
 
 print("PROBELM 1a OUTPUT")
-print("The stability limit for the interior is " + str(interior))
-print("The stability limit for the side is: " + str(side))
-print("The stability limit for the corner node is: " + str(corner))
-print("The value of dt is: " + str(dt))
-print("The value of Fo_m is: " + str(Fo_m))
-print("The value of Sh is: " + str(Sh))
-print()
-print()
 
 
 # b) Use dt = round(dt, 3) from 1.a. Use an array with 2*x*y dimensions to calculate 
@@ -121,7 +111,7 @@ while time < maximum:
         print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
         break
 
-print(c[1])
+
 
 # Plot concentration profiles in 3D
 x_grid = np.linspace(0, final_x, xn)  # x-axis points
