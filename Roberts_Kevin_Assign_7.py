@@ -118,7 +118,7 @@ x_grid = np.linspace(0, final_x, xn)  # x-axis points
 y_grid = np.linspace(0, final_y, yn)  # y-axis points
 X, Y = np.meshgrid(x_grid, y_grid)         # create the meshgrid
 
-for m in range(loop_counter):
+for m in range(S):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     
@@ -130,10 +130,6 @@ for m in range(loop_counter):
     ax.set_ylabel('Thickness in cm')
     ax.set_zlabel('Concentration in g/L')
     plt.show()
-
-# NOTE TO THE GRADER 
-# Unsure why I'm getting this error. I'm unable to plot the data but I'm pretty sure it's correct.
-# Let me know if you find what the issue is.
 
 
 # c) Console Output
