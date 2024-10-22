@@ -20,6 +20,8 @@ delta = 110
 A = 560
 sigma = 4000
 c_hat = 3
+T = 13 # total number of time steps
+X = 15 # legnth
 
 # dt = .5 * (dx*2) / Dc
 dt = 1/12
@@ -39,28 +41,26 @@ def B(n):
 def Dn(c):
     return alpha * c  + beta
 
+
 # Primary Model
-def Model(dx, dt = 1 / 12, time_iter_count = 13, X = 15): # dt is given in paper (under figure 1), time_iter_count = number of time steps
+def Model(dx, dt, T, X): # dt is given in paper (under figure 1), time_iter_count = number of time steps
     
     x_intervals = int(X/dx) + 1
 
     fig, axes = plt.subplots(1, 2)
 
     # columns indicate spaces steps, rows indicate time steps
-    n_data = np.zeros((13, x_intervals)) # First x_position is always 1; represents conentration outside of wound (position - 1)
-    c_data = np.zeros((13, x_intervals)) # First x_position is always 1; represents conentration outside of wound (position - 1)
+    n_data = np.zeros((T, x_intervals)) # First x_position is always 1; represents conentration outside of wound (position - 1)
+    c_data = np.zeros((T, x_intervals)) # First x_position is always 1; represents conentration outside of wound (position - 1)
     
     # time loop
-    for j in range(0, time_iter_count):
-            
-        prev_time = j - 1
+    for j in range(0, T):
         
         # Initialize initial values
         if j == 0:
             
-            # MIGHT NEED TO CHANGE THIS BECAUSE IT'S SETTING 1 EQUAL TO THE LEFT BOUNDARY 
-            n_data[0,:] = 1 
-            c_data[0,:] = 1
+            n_data[:,0] = 1
+            c_data[:,0] = 1
 
         else:
             
@@ -91,16 +91,16 @@ def Model(dx, dt = 1 / 12, time_iter_count = 13, X = 15): # dt is given in paper
                     n_data[j, i] = 0
                     c_data[j, i] = 50
                     
-    # Print data to file
-    with open("output.txt", 'w') as f:
+    # # Print data to file
+    # with open("output.txt", 'w') as f:
         
-        for row in n_data:
-            f.write(' '.join(map(str,row)) + '\n')
+    #     for row in n_data:
+    #         f.write(' '.join(map(str,row)) + '\n')
             
-        f.write('\n')
+    #     f.write('\n')
         
-        for row in c_data:
-            f.write(' '.join(map(str,row)) + '\n')
+    #     for row in c_data:
+    #         f.write(' '.join(map(str,row)) + '\n')
             
     # Plot data
     for j in range(len(n_data)):
@@ -118,4 +118,4 @@ def Model(dx, dt = 1 / 12, time_iter_count = 13, X = 15): # dt is given in paper
 
     print("Resulting data is output to Output.txt file")
         
-Model(dx, dt)
+Model(dx, dt, T, X)
