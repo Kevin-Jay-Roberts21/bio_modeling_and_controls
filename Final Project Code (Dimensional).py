@@ -11,26 +11,27 @@ import numpy as np
 # defining all of the constant parameters
 
 v = 2 # (dimless)
-n_0 = (1/(10**-5))^3 # (m^3)
+n_0 = (1/(10**-5))**3 # (m^3)
 c_0 = 6.6*(10**-10) # (M)
-k = 6.31*(10**-3)*(60*60) # (1/h)
+k = 6.31*(10**-3) # (1/h)
 L = 0.004 # (m)
 T = 37 # (h) # they run their experiment for 37 hours
-D_c = 25*k*(L**2)*(60*60) # (m^2/h)
-mu = 5.75*(10**-20)/(60*60) # (mol*h/cell)
+D_c = 25*k*(L**2) # (m^2/h)
+mu = 5.75*(10**-20) # (mol*h/cell)
 c_hat = 2*(10**-9) # (M)
 A = 560 # (dimless)
 sigma = 4000 # (dimless)
+delta = np.log(2) # (1/h)
 
 alpha_star = 0.01 # (dimless)
 beta_star = 0.1 # (dimless)
-alpha = alpha_star*k*(L**2)*(60*60) # m^2/(h*M)
-beta = beta_star*k*(L**2)*(60*60) # (m^2/h)
+alpha = alpha_star*k*(L**2) # (m^2/h)
+beta = beta_star*k*(L**2) # (m^2/h)
 
 alpha_1_star = 0.9 # (dimless)
 beta_1_star = 0.1 # (dimless)
-alpha_1 = 0.9*k*(60*60) # (1/h)
-beta_1 = 0.1*k*(60*60) # (1/h)
+alpha_1 = 0.9*k # (1/h)
+beta_1 = 0.1*k # (1/h)
 
 # defining the functions:
 def D_n(c):
@@ -55,8 +56,8 @@ dx = 0.0001 # (m)
 dt = 1 # (hrs) checking the status every hour
 total_length = L
 total_time = T
-n = int(final_time/dt) + 1 # number of time steps
-m = int(final_length) + 1 # number of space steps
+n = int(total_time/dt) + 1 # number of time steps
+m = int(total_length) + 1 # number of space steps
 
 # defining the boundary and initial conditions
 
