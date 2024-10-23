@@ -12,13 +12,13 @@ import numpy as np
 
 v = 2 # (dimless)
 n_0 = (1/(10**-5))**3 # (m^3)
-c_0 = 6.6*(10**-10) # (M)
+c_0 = 6.6*(10**-7) # (M)
 k = 6.31*(10**-3) # (1/h)
 L = 0.004 # (m)
 T = 37 # (h) # they run their experiment for 37 hours
 D_c = 25*k*(L**2) # (m^2/h)
 mu = 5.75*(10**-20) # (mol*h/cell)
-c_hat = 2*(10**-9) # (M)
+c_hat = 2*(10**-6) # (M)
 A = 560 # (dimless)
 sigma = 4000 # (dimless)
 delta = np.log(2) # (1/h)
@@ -49,7 +49,7 @@ def B(n):
         return 0
 
 def f(n):
-    return k*c_0*A # + k*c_0*B(n)
+    return k*c_0*A + k*c_0*B(n)
 
 # defining the time and space step as well as total length and total time
 dx = 0.0001 # (m)
