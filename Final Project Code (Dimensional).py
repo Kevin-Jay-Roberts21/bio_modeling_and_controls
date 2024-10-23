@@ -57,7 +57,7 @@ dt = 1 # (hrs) checking the status every hour
 total_length = L
 total_time = T
 n = int(total_time/dt) + 1 # number of time steps
-m = int(total_length) + 1 # number of space steps
+m = int(total_length/dx) + 1 # number of space steps
 
 # defining the boundary and initial conditions
 
@@ -73,11 +73,34 @@ c_left_boundary = c_0 # boundary condition (c(-inf, t) = c_0 for any t>=0)
 n_right_boundary = 0 # neumann condition (n_x(L,t) = 0 for any t>=0)
 c_right_boundary = 0 # neumann condition (c_x(L,t) = 0 for any t >= 0)
 
+# defining the cell density and EGF concentration arrays
+n_data = np.zeros((n, m))
+c_data = np.zeros((n, m))
 
-
-
-
-
+# Running the loop
+for i in range(n):
+    for j in range(m):
+        
+        
+        if i == 0 and 0 <= j < (L/2)/dx:
+            
+            if j == 0: # left boundary conditions
+                n_data[i, j] = n_0
+                c_data[i, j] = c_0
+            else: # initial conditions
+                n_data[i, j] = n_0 # (-inf < x < 0)
+                c_data[i, j] = c_0 # (-inf < x < 0)
+        elif i == 0 and (L/2)/dx < j < L/dx:
+            n_data[i, j] = 0
+            c_data[i, j] = 0
+        
+        
+        
+        
+        # the regular discretization
+        else:
+            n_data[i, j] = n_data(i-1, j) + dt*(1/(2*(dx**2))*D_n(c_data[i-1, j])*(n_data[i-1, j+1] - n_data[i-1, j-1]) + s(c_data[i-1, j])*n_data[i-1, j]*(v - n_data[i-1, j]/n_0) - k*n_data[i-1,j])
+            c_data[i, j] = c_data(i-1, j) + dt*(D_c/(dx**2)*(c_data[i-1, j+1] - 2*c_data[i-1, j] + c[i-1, j+1]) + f(n_data(i-1, j)) - mu*c_data[i-1, j]/(c_hat + c_data[j-1, i])*n_data[i-1, j] - delta*c_data[i-1, j])
 
 
 
