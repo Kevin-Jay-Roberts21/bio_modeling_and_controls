@@ -49,7 +49,7 @@ def B(n):
         return 0
 
 def f(n):
-    return k*c_0*A
+    return k*c_0*A + k*c_0*B(n)
 
 # defining the time and space step as well as total length and total time
 dx = 0.0001 # (m)
@@ -58,20 +58,6 @@ total_length = L
 total_time = T
 n = int(total_time/dt) + 1 # number of time steps
 m = int(total_length/dx) + 1 # number of space steps
-
-# defining the boundary and initial conditions
-
-# initial conditions
-n_time_forpositivex_0 = 0 # initial condition (for 0 <= x < L)
-c_time_forpositivex_0 = 0 # initial condition (for 0 <= x < L)
-n_time_fornegativex_0 = n_0 # initial condition (for -inf < x < 0)
-c_time_fornegativex_0 = c_0 # initial condition (for -inf < x < 0)
-
-# boundary conditions
-n_left_boudnary = n_0 # boundary condition (n(-inf, t) = n_0 for any t>=0)
-c_left_boundary = c_0 # boundary condition (c(-inf, t) = c_0 for any t>=0)
-n_right_boundary = 0 # neumann condition (n_x(L,t) = 0 for any t>=0)
-c_right_boundary = 0 # neumann condition (c_x(L,t) = 0 for any t >= 0)
 
 # defining the cell density and EGF concentration arrays
 n_data = np.zeros((n, m))
@@ -94,14 +80,15 @@ for i in range(n):
         else:
             
             # setting the boundary condition
-            if j == 0: # (x = -inf) 
+            if j == 0: # (x = -inf, left end) 
                 n_data[i, j] = n_0
                 c_data[i, j] = c_0
-            elif j == m-1: # (neumann boundary conditions)
+            
+            elif j == m-1: # (neumann boundary conditions, right end)
             
                 # neumann boundary conditions
-                n_data[i, j-1] = n_data[i, j-2]
-                c_data[i, j-1] = c_data[i, j-2]
+                n_data[i, j] = n_data[i, j-1]
+                c_data[i, j] = c_data[i, j-1]
             
                 # # dirichlet boundary conditions
                 # n_data[i, j-1] = 0
@@ -116,7 +103,6 @@ for i in range(n):
                 # n_data[i, j] = n_data[i-1, j] + dt*(1/(2*(dx**2))*D_n(c_data[i-1, j])*(n_data[i-1, j+1] - n_data[i-1, j-1]) + s(c_data[i-1, j])*n_data[i-1, j]*(v - n_data[i-1, j]/n_0) - k*n_data[i-1,j])
                 
                 
-                
                 c_data[i, j] = c_data[i-1, j] + dt*(D_c*(c_data[i-1, j+1] - 2*c_data[i-1, j] + c_data[i-1, j+1])/(dx**2) + f(n_data[i-1, j]) - mu*c_data[i-1, j]/(c_hat + c_data[i-1, j])*n_data[i-1, j] - delta*c_data[i-1, j])
         
 
@@ -125,15 +111,15 @@ for i in range(n):
 plt.figure()
 x = np.linspace(-L/2, L/2, len(n_data[0,:]))
 
-t1_hours = 1
-t2_hours = 5
-t3_hours = 10
-t4_hours = 15
-t5_hours = 20
-t6_hours = 25
-t7_hours = 30
-t8_hours = 35
-t9_hours = 37
+t1_hours = 7
+t2_hours = 8
+t3_hours = 9
+t4_hours = 9
+t5_hours = 12
+t6_hours = 15
+t7_hours = 18
+t8_hours = 21
+t9_hours = 25
 
 
 t0 = 0
@@ -147,10 +133,10 @@ t7 = int(t7_hours/dt)
 t8 = int(t8_hours/dt)
 t9 = int(t9_hours/dt)
 
-plt.plot(x, n_data[t0,:], label=f'Density at t={t0} hours')
-plt.plot(x, n_data[t1,:], label=f'Density at t={t1_hours} hours')
-plt.plot(x, n_data[t2,:], label=f'Density at t={t2_hours} hours')
-plt.plot(x, n_data[t3,:], label=f'Density at t={t3_hours} hours')
+#plt.plot(x, n_data[t0,:], label=f'Density at t={t0} hours')
+# plt.plot(x, n_data[t1,:], label=f'Density at t={t1_hours} hours')
+# plt.plot(x, n_data[t2,:], label=f'Density at t={t2_hours} hours')
+# plt.plot(x, n_data[t3,:], label=f'Density at t={t3_hours} hours')
 plt.plot(x, n_data[t4,:], label=f'Density at t={t4_hours} hours')
 plt.plot(x, n_data[t5,:], label=f'Density at t={t5_hours} hours')
 plt.plot(x, n_data[t6,:], label=f'Density at t={t6_hours} hours')
@@ -162,7 +148,7 @@ plt.plot(x, n_data[t9,:], label=f'Density at t={t9_hours} hours')
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.title('Cell Density Spatial Profile')
 plt.xlabel('x axis in m')
-plt.ylabel('Cell Density cell/m^3')
+plt.ylabel(r'Cell Density in $\frac{\text{cell}}{\text{m}^3}$')
 plt.tight_layout()
 plt.show()
 
@@ -170,10 +156,10 @@ plt.show()
 plt.figure()
 x = np.linspace(-L/2, L/2, len(c_data[0,:]))
 
-plt.plot(x, c_data[0,:], label=f'EGF concen. at t={t0} hours')
-plt.plot(x, c_data[t1,:], label=f'EGF concen. at t={t1_hours} hours')
-plt.plot(x, c_data[t2,:], label=f'EGF concen. at t={t2_hours} hours')
-plt.plot(x, c_data[t3,:], label=f'EGF concen. at t={t3_hours} hours')
+# plt.plot(x, c_data[0,:], label=f'EGF concen. at t={t0} hours')
+# plt.plot(x, c_data[t1,:], label=f'EGF concen. at t={t1_hours} hours')
+# plt.plot(x, c_data[t2,:], label=f'EGF concen. at t={t2_hours} hours')
+# plt.plot(x, c_data[t3,:], label=f'EGF concen. at t={t3_hours} hours')
 plt.plot(x, c_data[t4,:], label=f'EGF concen. at t={t4_hours} hours')
 plt.plot(x, c_data[t5,:], label=f'EGF concen. at t={t5_hours} hours')
 plt.plot(x, c_data[t6,:], label=f'EGF concen. at t={t6_hours} hours')
@@ -183,9 +169,9 @@ plt.plot(x, c_data[t9,:], label=f'EGF concen. at t={t9_hours} hours')
 
 # Adding a title and labels
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.title('EGF Concentration Spatial Profile')
+plt.title('EGF Concen. Spatial Profile')
 plt.xlabel('x axis in m')
-plt.ylabel('EGF concentration in mol/m^3')
+plt.ylabel(r'EGF concentration in $\frac{\text{mol}}{\text{m}^3}$')
 plt.tight_layout()
 plt.show()
 
