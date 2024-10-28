@@ -5,6 +5,8 @@ Created on Mon Oct 21 14:28:48 2024
 
 @author: kevinjayroberts
 """
+import numpy as np
+import matplotlib.pyplot as plt
 
 #############
 # PROBLEM 1 #
@@ -20,6 +22,7 @@ D = 0.252*(10**-4) # (m^2/day)
 dx = 0.01 # (cm)
 dy = 0.01 # (cm)
 k_m = 3.1536*10**(-3) 
+C_e = 20 # (g/l)
 C_f = 15 # (g/l)
 Sh = k_m*dx/D
 interior = dx**2/(4*D)
@@ -93,9 +96,8 @@ while time < maximum:
 
     # Check if all agar has at least target concentration
     if np.all(c[1,:,:] >= C_f):
-        print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+        # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
         break
-
 
 
 # Plot concentration profiles in 3D
@@ -117,7 +119,7 @@ for m in range(S):
     plt.show()
 
 
-
+# printing all of the output stuff
 print()
 print("The higher concentration on the boundaries is due to the glucose solution along the boundary. Diffusion occurs slower in the middle due to the fact that it's far from the boundary.")
 
@@ -134,9 +136,9 @@ for i in range(len(p)):
     
     
     if i == 0:
-        print("x[m]: " + str(round(p_data[0][:,1][1][len(p_data[0][:,1][1])-1],3)) + ", aspect ratio: " + str(int(x_length*100)) + "x10x1," + " final time: " + str(transfer_time) + ", perc diff: nan")
+        print("x[m]: " + str(round(c[0][:,1][1][len(c[0][:,1][1])-1],3)) + ", aspect ratio: 40x10x10," + " final time: " + str(transfer_time))
     else:
-        print("x[m]: " + str(round(p_data[0][:,1][1][len(p_data[0][:,1][1])-1],3)) + ", aspect ratio: " + str(int(x_length*100)) + "x10x1," + " final time: " + str(transfer_time) + ", perc diff: " + str(perc_diff_value))
+        print("x[m]: " + str(round(c[0][:,1][1][len(c[0][:,1][1])-1],3)) + ", aspect ratio: 40x10x10," + " final time: " + str(transfer_time))
     prev_data = p_data
     perc_differences.append(perc_diff_value)
     transfer_times.append(transfer_time)
