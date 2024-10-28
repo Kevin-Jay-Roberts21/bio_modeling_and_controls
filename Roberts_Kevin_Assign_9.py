@@ -117,6 +117,7 @@ for m in range(S):
     plt.show()
 
 
+
 print()
 print("The higher concentration on the boundaries is due to the glucose solution along the boundary. Diffusion occurs slower in the middle due to the fact that it's far from the boundary.")
 
