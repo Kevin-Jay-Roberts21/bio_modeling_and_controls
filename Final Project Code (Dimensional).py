@@ -12,7 +12,7 @@ import numpy as np
 
 v = 2 # (dimless)
 n_0 = (1/(10**-5))**3 # (m^3)
-c_0 = 6.6*(10**-7) # (mol/m^3)
+c_0 = 6.6*2*(10**-7) # (mol/m^3)
 k = 6.31*(10**-3) # (1/h)
 L = 0.002 # (m)
 T = 37 # (h) # they run their experiment for 37 hours
