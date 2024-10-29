@@ -159,7 +159,9 @@ plt.show()
 
 # c) Explain
 print("PROBLEM 1c OUTPUT")
-
+print("i) ")
+print("ii) ")
+print("iii) ")
 
 print()
 print()
@@ -196,6 +198,7 @@ ax.set_zlabel('Concentration in g/L')
 plt.show()
 
 # e) Explain
-
-
-
+print("PROBLEM 1e OUTPUT")
+print("i) ")
+print("ii) ")
+print("iii) ")
