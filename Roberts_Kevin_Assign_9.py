@@ -24,7 +24,7 @@ dy = 0.01 # (cm)
 k_m = 3.1536*10**(-3) 
 C_e = 20 # (g/l)
 C_f = 15 # (g/l)
-Sh = k_m*dx/D
+Sh = round(k_m*dx/D,3)
 interior = dx**2/(4*D)
 side = dx**2/(2*D*(2 + Sh))
 corner = dx**2/(4*D*(1 + Sh))
@@ -50,14 +50,13 @@ c = np.zeros((2,xn,yn)) # sets the initial conditions
 data = np.zeros((S, xn, yn))
 data[0] = c[1]
 
-# printing the first time
-print(f"Day 0: Minimum analgesic = {np.min(c[1]):.4f} g/L")
 step_saved = 1
 
 # adding the glucose on the side 
 
 loop_counter = 0
 time = 0
+end_time = 0
 
 while time < maximum:
     
@@ -97,51 +96,106 @@ while time < maximum:
     # Check if all agar has at least target concentration
     if np.all(c[1,:,:] >= C_f):
         # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+        data[step_saved] = c[1,:,:]
+        end_time = dt*loop_counter
         break
 
+# printing all of the output stuff
+print("PROBELM 1a OUTPUT:")
+print("x[m]: " + str(round(c[1][xn-1][0],3)))
+print("y[m]: " + str(round(c[1][1][yn-1],3)))
+print("Aspect Ratio: 40x10x10")
+print("Diffusion time to >= 15 g/l: " + str(loop_counter*dt))
+print("Sherwood Number: " + str(Sh))
+for i in range(S-1):
+    minimum = np.min(data[i,:,:])
+    time = i*15
+    print(f"Day {int(time)}: Minimum analgesic concentration = {minimum:.3f} g/L")
+end_min = np.min(data[len(data)-1,:,:])
+print(f"Day {int(end_time)} (last day): Minimum analgesic concentration = {end_min:.3f} g/L")
+print()
+print()
+# b) Figure 1a
 
+# getting the all the minimum values at each 15 days
+mins = []
+
+for i in range(S):
+    mins.append(np.min(data[i]))
+
+L = 0.1 # (m)
+t = [0, 15, 30, 45, 50]
+dim_less_time = [round(i * (D / L**2), 3) for i in t]
+
+# Create a figure with two subplots
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
+
+# First subplot for the original time plot
+ax1.plot(t, mins, marker='o', label='Analgesic minimums')
+
+# Customizing the first subplot
+ax1.set_title("Plotting Analgesic Mins at every 15 days")
+ax1.set_xlabel("Time (days)")
+ax1.set_ylabel("Minimum Analgesic values (g/l)")
+ax1.set_xticks(t)  # Set x-ticks to match the time values
+ax1.legend()
+ax1.grid()
+
+# Second subplot for the dimensionless time plot
+ax2.plot(dim_less_time, mins, marker='o', label='Analgesic minimums')
+
+# Customizing the second subplot
+ax2.set_title("Plotting Analgesic Mins (Dimensionless Time)")
+ax2.set_xlabel("Dimensionless Time")
+ax2.set_ylabel("Minimum Analgesic values (g/l)")
+ax2.tick_params(axis='x', rotation=45)
+ax2.set_xticks(dim_less_time)  # Set x-ticks to match the time values
+ax2.legend()
+ax2.grid()
+
+# Adjust layout and show the plot
+plt.tight_layout()
+plt.show()
+
+# c) Explain
+print("PROBLEM 1c OUTPUT")
+
+
+print()
+print()
+
+# d) Figure 1b 
 # Plot concentration profiles in 3D
 x_grid = np.linspace(0, final_x, xn)  # x-axis points
 y_grid = np.linspace(0, final_y, yn)  # y-axis points
 X, Y = np.meshgrid(x_grid, y_grid)         # create the meshgrid
 
-for m in range(S):
+for m in range(S-1):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     
     # Plot the surface, with correctly matched X, Y, and data[m,:,:] shapes
     ax.plot_surface(X, Y, data[m,:,:].T, cmap='viridis')
 
-    ax.set_title(f'Mass at Day {m * save_step}')
+    ax.set_title(f'Analgesic at Day {m * save_step}')
     ax.set_xlabel('Length in cm')
     ax.set_ylabel('Thickness in cm')
     ax.set_zlabel('Concentration in g/L')
     plt.show()
+# plotting the last day
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
+# Plot the surface, with correctly matched X, Y, and data[m,:,:] shapes
+ax.plot_surface(X, Y, data[len(data)-1,:,:].T, cmap='viridis')
 
-# printing all of the output stuff
-print()
-print("The higher concentration on the boundaries is due to the glucose solution along the boundary. Diffusion occurs slower in the middle due to the fact that it's far from the boundary.")
+ax.set_title(f'Analgesic at Day {int(end_time)}')
+ax.set_xlabel('Length in cm')
+ax.set_ylabel('Thickness in cm')
+ax.set_zlabel('Concentration in g/L')
+plt.show()
 
-print("PROBELM 1a OUTPUT:")
-for i in range(len(p)):
-    
-    x_length = 0.2+p[i]
-    p_data = get_agar_data(x_length)
-    
-    diff_p_data.append(p_data)
-    
-    perc_diff_value = round(perc_diff(prev_data[2], p_data[2]), 3)
-    transfer_time = round(p_data[2],3)
-    
-    
-    if i == 0:
-        print("x[m]: " + str(round(c[0][:,1][1][len(c[0][:,1][1])-1],3)) + ", aspect ratio: 40x10x10," + " final time: " + str(transfer_time))
-    else:
-        print("x[m]: " + str(round(c[0][:,1][1][len(c[0][:,1][1])-1],3)) + ", aspect ratio: 40x10x10," + " final time: " + str(transfer_time))
-    prev_data = p_data
-    perc_differences.append(perc_diff_value)
-    transfer_times.append(transfer_time)
+# e) Explain
 
 
 
