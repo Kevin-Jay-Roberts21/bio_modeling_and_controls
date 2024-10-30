@@ -159,10 +159,9 @@ plt.show()
 
 # c) Explain
 print("PROBLEM 1c OUTPUT")
-print("i) ")
-print("ii) ")
-print("iii) ")
-
+print("i) The concentration in assignment 8 tooka  lot longer to get to a minimum of 15 g/l than the concentration in assignment 9, even though the target concentration in assignment 8 was 20 g/l.")
+print("ii) We could cahnge the diffusion constant, or we could also change the boundary conditions.")
+print("iii) Changing the diffusion constant would make the concentration in assignment 9 diffuse slower to match assignment 8. And of course if we change the boundary conditions then assignment 8 would exactly match assignment 9.")
 print()
 print()
 
@@ -199,6 +198,6 @@ plt.show()
 
 # e) Explain
 print("PROBLEM 1e OUTPUT")
-print("i) ")
-print("ii) ")
-print("iii) ")
+print("i) The concentration regardless of dimensional or dimensionless time or concentration, behaves similarly. It is important to note that the nice thing about nondimensionalizing a system is that we are easily able to model any situation and get similar results.")
+print("ii) The axial concentration profiles in Figure 1b show a sharper decrease on one of the sides of the slab and this is due to the modified boundary condition on the 'right' side, and the 0.5 being multiplied to the sherwood number in the discretization. They are similar because they have the overall same diffusion discretization method being applied to the center of the slab, and have the same initial conditions.")
+print("iii) We might say the implications since there is no net mass transfer along one of the axis, the diffusion along that axis will not need to be explicitly included in a model.")
