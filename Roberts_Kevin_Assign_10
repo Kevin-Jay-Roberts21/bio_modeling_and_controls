@@ -6,3 +6,64 @@ Created on Fri Nov  1 14:36:01 2024
 @author: kevinjayroberts
 """
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+# defining the cube 1, 2, and 3 dimensions
+cube1_width = 0.01 # (m) the x value
+cube1_height = 0.01 # (m) the y value
+cube1_thickness = 0.01 # (m) the z value
+
+cube2_width = 0.011 # (m) the x value
+cube2_height = 0.011 # (m) the y value
+cube2_thickness = 0.011 # (m) the z value
+
+cube3_width = 0.012 # (m) the x value
+cube3_height = 0.012 # (m) the y value
+cube3_thickness = 0.012 # (m) the z value
+
+def run_heat_transfer(x, y, z):
+
+    # target temp
+    T_f = 20 # (C)
+    save_step = 10 # (save every 10 seconds)
+    
+    # other constant params
+    p = 998.2 # (kg/m^3) desnity
+    C_p = 4182 # (J/(kg*K)) heat capacity
+    k = 0.598 # (W/(m*k)) thermal conductivity
+    h = 750 # (W/(K*m^2)) heat transfer coefficient
+    T_e = 90 # (C) external temperature
+    
+    dx = 0.001 # (m)
+    dy = 0.001 # (m)
+    dz = 0.001 # (m)
+    dt = 0.1 # (s)
+    
+    # defining the lengths of the width, height and thickness, respectively
+    xn = int(x/dx) + 1
+    yn = int(y/dy) + 1
+    zn = int(z/dz) + 1
+    
+    # defining the initial conditions
+    T_time_0 = 4 # (C)
+    
+    # defining the boundary conditions
+    T_space_0 = 0 # (C)
+
+    # defining the cube (which will change at every time step)
+    c = np.zeros((2, zn, yn, xn))
+    
+    # defining the data (which will be added to at every 10 seconds)
+    # it is set at a length of "1" for now, but we will add to it every 10 seconds
+    # to add another element to it, we just grab c[1], and do data.append(c[1])
+    data = [np.zeros((zn, yn, xn))]
+    
+    
+    
+    
+    
+    
+    
+    
+    
