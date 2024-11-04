@@ -31,7 +31,7 @@ def run_heat_transfer(x, y, z):
     # other constant params
     p = 998.2 # (kg/m^3) desnity
     C_p = 4182 # (J/(kg*K)) heat capacity
-    k = 0.598 # (W/(m*k)) thermal conductivity
+    kh = 0.598 # (W/(m*k)) thermal conductivity
     h = 750 # (W/(K*m^2)) heat transfer coefficient
     T_e = 90 # (C) external temperature
     
@@ -60,10 +60,150 @@ def run_heat_transfer(x, y, z):
     data = [np.zeros((zn, yn, xn))]
     
     
-    
-    
-    
-    
+    while time < maximum:
+        
+        c[0,:,:,:] = c[1,:,:,:]   
+        
+        for i in range(xn): # width loop (x)
+            for j in range(yn): # height loop (y)
+                for k in range(zn): # thickness loop (z)
+                    
+                
+                    # defining cases all of the corners    
+                
+                    # for the upper front left corner
+                    if i == 0 and j == 0 and k == 0:
+                    c[1,k,j,i] = c[0,k,j,i] + (
+                        dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 + 
+                                      (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
+                                      (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
+                        2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
+                        2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+                        2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+                    
+                    # for the upper front right corner
+                    elif i == xn-1 and j == 0 and k == 0:
+                        pass
+                    
+                    # for the lower front left corner
+                    elif i == 0 and j == yn-1 and k == 0:
+                        pass
+                    
+                    # for the lower front right corner
+                    elif i == xn-1 and j == yn-1 and k == 0:
+                        pass
+                    
+                    # for the upper back left corner
+                    if i == 0 and j == 0 and k == zn-1:
+                        pass
+                    
+                    # for the upper back right corner
+                    elif i == xn-1 and j == 0 and k == zn-1:
+                        pass
+                    
+                    # for the lower back left corner
+                    elif i == 0 and j == yn-1 and k == zn-1:
+                        pass
+                    
+                    # for the lower back right corner
+                    elif i == xn-1 and j == yn-1 and k == zn-1:
+                        pass
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    # defining cases for all the edges
+                    
+                    #### FRONT ####
+                    # for the front left edge
+                    elif i == 0 and (0 < j < yn-1) and k == 0:
+                        pass
+                    
+                    # for the front right edge
+                    elif i == xn-1 and (0 < j < yn-1) and k == 0:
+                        pass
+                    
+                    # for the front top edge
+                    elif (0 < i < xn-1) and j == 0 and k == 0:
+                        pass
+                    
+                    # for the front bottom edge
+                    elif (0 < i < xn-1) and j == yn-1 and k == 0:
+                        pass
+                    
+                    
+                    
+                    #### MIDDLE ####
+                    # for the middle top left edge
+                    elif i == 0 and j == 0 and (0 < k < zn-1):
+                        pass
+                    
+                    # for the middle top right edge
+                    elif i == xn-1 and j == 0 and (0 < k < zn-1):
+                        pass
+                    
+                    # for the middle bottom left edge
+                    elif i == 0 and j == yn-1 and (0 < k < zn-1):
+                        pass
+                    
+                    # for the middle bottom right edge
+                    elif i == xn-1 and j == yn-1 and (0 < k < zn-1):
+                        pass
+                    
+                    
+                    
+                    #### BACK ####
+                    # for the back left edge
+                    elif i == 0 and (0 < j < yn-1) and k == zn-1:
+                        pass
+                    
+                    # for the back right edge
+                    elif i == xn-1 and (0 < j < yn-1) and k == zn-1:
+                        pass
+                    
+                    # for the back top edge
+                    elif (0 < i < xn-1) and j == 0 and k == zn-1:
+                        pass
+                    
+                    # for the back bottom edge
+                    elif (0 < i < xn-1) and j == yn-1 and k == zn-1:
+                        pass
+                    
+                    
+                    # defining the faces
+                    
+                    # for the front face
+                    elif (0 < i < xn-1) and (0 < j < yn-1) and k == 0:
+                        pass
+                    
+                    # for the left face
+                    elif i == 0 and (0 < j < yn-1) and (0 < k < zn-1):
+                        pass
+                    
+                    # for the right face
+                    elif i == xn-1 and (0 < j < yn-1) and (0 < k < zn-1):
+                        pass
+                    
+                    # for the top face
+                    elif (0 < i < xn-1) and j == 0 and (0 < k < zn-1):
+                        pass
+                    
+                    # for the bottom face
+                    elif (0 < i < xn-1) and j == yn-1 and (0 < k < zn-1):
+                        pass
+                    
+                    # for the back face
+                    elif (0 < i < xn-1) and (0 < j < yn-1) and k == zn-1:
+                        pass
+                    
+                    
+                    # for everything else in the interior
+                    else:
+                
+                
     
     
     
