@@ -21,6 +21,7 @@ def run_heat_transfer(x, y, z):
     kh = 0.598 # (W/(m*k)) thermal conductivity
     h = 750 # (W/(K*m^2)) heat transfer coefficient
     T_e = 90 # (C) external temperature
+    alpha = kh/(p*C_p)
     
     dx = 0.001 # (m)
     dy = 0.001 # (m)
@@ -34,7 +35,7 @@ def run_heat_transfer(x, y, z):
     
     # calculating the biot number and thermal diffusivity
     Bi = h*dx/kh # biot number
-    Td = 1 # thermal diffusivity
+    Td = alpha # thermal diffusivity
     
     # defining the initial conditions
     T_time_0 = 4 # (C)
@@ -169,7 +170,7 @@ def run_heat_transfer(x, y, z):
                             dt * alpha * ((2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0)/dz**2 +
                                           (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
                                           (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0)/dx**2) +
-                            2*dt*h*alpha/(kh*dz)*(Te - c[0,k,j,i]) +
+                            2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
@@ -358,10 +359,11 @@ def run_heat_transfer(x, y, z):
                     
                     # for everything else in the interior
                     else:
+                        # PROBABLY AN ERROR HERE
                         c[1,k,j,i] = c[0,k,j,i] + (
-                            dt*alpha*((c[0,k-1,j,i] - 2*c[0,k,j,i] + c[0,k+1,j,i])/ dz**2 +
-                                      (c[0,k,j-1,i] - 2*c[0,k,j,i] + c[0,k,j+1,i])/ dy**2 +
-                                      (c[0,k,j,i-1] - 2*c[0,k,j,i] + c[0,k,j,i+1])/ dx**2))
+                            dt*alpha*((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
+                                      (c[0,k,j,i] - 2*c[0,k,j,i] + c[0,k,j,i])/dy**2 +
+                                      (c[0,k,j,i] - 2*c[0,k,j,i] + c[0,k,j,i])/dx**2))
                 
         # increasing the loop_counter
         loop_counter += 1
@@ -442,12 +444,12 @@ print("Results of Cube 1")
 print("x: " )
 print("y: " )
 print("z: " )
-print("Thermal diffusivity: " + str(round(cube1_data[4], 3))) 
+print("Thermal diffusivity: " + str(round(cube1_data[4], 6))) 
 print("Biot Number: " + str(round(cube1_data[3], 3)))
 
 # printing the minimum concentration at a certain position for every 10 seconds
 for i in range(len(cube1_data[0])):
-    print("T = 0:   min heat: " + str(round(np.min(cube1_data[0][i]), 3)) + "    position: " + str(round(np.unravel_index(np.argmin(np.min(cube1_data[0][i])), np.min(cube1_data[0][i]).shape) ,3)))
+    print("T = 0:   min heat: " + str(round(np.min(cube1_data[0][i]), 3)) + "    position: " + str(np.unravel_index(np.argmin(np.min(cube1_data[0][i])), np.min(cube1_data[0][i]).shape)))
 
 print("#################")
 print("Results of Cube 2")
@@ -459,7 +461,7 @@ print("Biot Number: " + str(round(cube2_data[3], 3)))
 
 # printing the minimum concentration at a certain position for every 10 seconds
 for i in range(len(cube2_data[0])):
-    print("T = 0:   min heat: " + str(round(np.min(cube2_data[0][i]), 3)) + "    position: " + str(round(np.unravel_index(np.argmin(np.min(cube2_data[0][i])), np.min(cube2_data[0][i]).shape) ,3)))
+    print("T = 0:   min heat: " + str(round(np.min(cube2_data[0][i]), 3)) + "    position: " + str(np.unravel_index(np.argmin(np.min(cube2_data[0][i])), np.min(cube2_data[0][i]).shape)))
 
 print("#################")
 print("Results of Cube 3")
@@ -471,7 +473,7 @@ print("Biot Number: " + str(round(cube3_data[3], 3)))
 
 # printing the minimum concentration at a certain position for every 10 seconds
 for i in range(len(cube3_data[0])):
-    print("T = 0:   min heat: " + str(round(np.min(cube3_data[0][i]), 3)) + "    position: " + str(round(np.unravel_index(np.argmin(np.min(cube3_data[0][i])), np.min(cube3_data[0][i]).shape) ,3)))
+    print("T = 0:   min heat: " + str(round(np.min(cube3_data[0][i]), 3)) + "    position: " + str(np.unravel_index(np.argmin(np.min(cube3_data[0][i])), np.min(cube3_data[0][i]).shape)))
 
 print()
 print()
@@ -504,9 +506,9 @@ cube1_dim_less_time = [round(i * (cube1_data[5] / cube1_L**2), 3) for i in cube1
 cube2_dim_less_time = [round(i * (cube2_data[5] / cube2_L**2), 3) for i in cube2_t]
 cube3_dim_less_time = [round(i * (cube3_data[5] / cube3_L**2), 3) for i in cube3_t]
 
-plot_min_heats(t, dim_less_time, cube1_mins, "1") # plotting cube 1 mins
-plot_min_heats(t, dim_less_time, cube2_mins, "2") # plotting cube 2 mins
-plot_min_heats(t, dim_less_time, cube3_mins, "3") # plotting cube 3 mins
+plot_min_heats(cube1_t, cube1_dim_less_time, cube1_mins, "1") # plotting cube 1 mins
+plot_min_heats(cube2_t, cube2_dim_less_time, cube2_mins, "2") # plotting cube 2 mins
+plot_min_heats(cube3_t, cube3_dim_less_time, cube3_mins, "3") # plotting cube 3 mins
 
     
 # c) Explain
