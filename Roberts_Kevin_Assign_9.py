@@ -50,7 +50,7 @@ c = np.zeros((2,xn,yn)) # sets the initial conditions
 data = np.zeros((S, xn, yn))
 data[0] = c[1]
 
-step_saved = 1
+step_saved = 0
 
 # adding the glucose on the side 
 
@@ -88,14 +88,16 @@ while time < maximum:
     
     # saving the data every 15 steps
     if loop_counter % interval_steps == 0:
+        step_saved += 1
         data[step_saved] = c[1,:,:]
         minimum = np.min(c[1,:,:])
         # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
-        step_saved += 1
+        
 
     # Check if all agar has at least target concentration
     if np.all(c[1,:,:] >= C_f):
         # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+        step_saved += 1
         data[step_saved] = c[1,:,:]
         end_time = dt*loop_counter
         break
