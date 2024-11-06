@@ -30,6 +30,7 @@ def run_heat_transfer(x, y, z):
     
     maximum = 60 # (maximum time in seconds)
     S = int(maximum / save_step) + 1
+    interval_steps = int(save_step / dt)
     
     # defining the lengths of the width, height and thickness, respectively
     xn = int(x/dx) + 1
@@ -67,351 +68,6 @@ def run_heat_transfer(x, y, z):
     while time < maximum:
         
         c[0,:,:,:] = c[1,:,:,:]   
-        
-        # ############
-        # # INTERIOR #
-        # ############
-        
-        # for i in range(1,xn-1): # width loop (x)
-        #     for j in range(1,yn-1): # height loop (y)
-        #         for k in range(1,zn-1): # thickness loop (z)
-        #             c[1,k,j,i] = c[0,k,j,i] + (
-        #                 dt*alpha*((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
-        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,k,j,i-1])/dx**2))
-        
-        # #########
-        # # FACES #
-        # #########
-        
-        # # updating the front face
-        # for i in range(1,xn-1):
-        #     for j in range(1,yn-1):
-        #         # for the front face
-        #         k = 0
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 +
-        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
-        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,k,j,i-1])/dx**2) +
-        #             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0 +
-        #             0)
-        
-        # # updating the left face
-        # for j in range(1,yn-1):
-        #     for k in range(1,zn-1):
-        #         # for the left face
-        #         i = 0
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
-        #                           (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #             0 +
-        #             0 +
-        #             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-                
-        # # updating the right face
-        # for j in range(1,yn-1):
-        #     for k in range(1,zn-1):
-        #         # for the right face
-        #         i == xn-1
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
-        #                           (0 - 2*c[0,k,j,i] + 2*c[0,i,j,k-1])/dx**2) +
-        #             0 +
-        #             0 +
-        #             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-                
-        # # updating the top face
-        # for i in range(1,xn-1):
-        #     for z in range(1,zn-1):
-        #         # for the top face
-        #         j = 0
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
-        #             0 +
-        #             2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #             0)
-                
-        # # updating the bottom face
-        # for i in range(1,xn-1):
-        #     for z in range(1,zn-1):
-        #         # for the bottom face
-        #         j == yn-1
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
-        #             0 +
-        #             0 +
-        #             0)
-                
-        # # updating the back face
-        # for i in range(1,xn-1):
-        #     for j in range(1,yn-1):
-        #         # for the back face
-        #         k == zn-1
-        #         c[1,k,j,i] = c[0,k,j,i] + (
-        #             dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 +
-        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
-        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
-        #             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0 +
-        #             0)
-                     
-        
-        # #########
-        # # EDGES #
-        # #########
-            
-        # # updating the front top edge, front bottom edge, back top edge, back bottom edge
-        # for i in range(1, xn-1):
-        #     # for the front top edge
-        #     j = 0
-        #     z = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 +
-        #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0)
-            
-        #     # for the front bottom edge
-        #     j = yn-1
-        #     z = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         0)
-            
-        #     # for the back top edge
-        #     j = 0
-        #     z = zn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 +
-        #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0)
-            
-        #     # for the back bottom edge
-        #     j = yn-1
-        #     z = zn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         0)
-            
-            
-        # # updating the front left edge, front right edge, back left edge, back right edge
-        # for j in range(1, yn-1):
-        #     # for the front left edge
-        #     i = 0
-        #     z = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0)/dz**2 +
-        #                       (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
-        #                       (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0)/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        #     # for the front right edge
-        #     i = xn-1
-        #     z = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 +
-        #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-           
-        #     # for the back left edge
-        #     i = 0
-        #     z = zn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 +
-        #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
-        #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        #     # for the back right edge
-        #     i = xn-1
-        #     z = zn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 +
-        #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        # # updating the middle top left edge, middle top right edge, middle bottom left edge, middle bottom, right edge
-        # for k in range(1, zn-1):
-        #     # for the middle top left edge
-        #     i = 0
-        #     j = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
-        #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        #     # for the middle top right edge
-        #     i = xn-1
-        #     j = 0
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
-        #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        #     # for the middle bottom left edge
-        #     i = 0
-        #     j = yn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #         0 +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-            
-        #     # for the middle bottom right edge
-        #     i = xn-1
-        #     j = yn-1
-        #     c[1,k,j,i] = c[0,k,j,i] + (
-        #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         0 +
-        #         0 +
-        #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        
-        
-        # ###########
-        # # CORNERS #
-        # ###########
-        # # for the upper front left corner
-        # i = 0
-        # j = 0
-        # k = 0
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 + 
-        #                   (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the upper front right corner
-        # i = xn-1
-        # j = 0
-        # k = 0
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 + 
-        #                   (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the lower front left corner
-        # i = 0
-        # j = yn-1
-        # k = 0
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 + 
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     0 + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the lower front right corner
-        # i = xn-1
-        # j = yn-1
-        # k = 0
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 + 
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     0 + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the upper back left corner
-        # i = 0
-        # j = 0
-        # k = zn-1
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 + 
-        #                   (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the upper back right corner
-        # i = xn-1
-        # j = 0
-        # k = zn-1
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 + 
-        #                   (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the lower back left corner
-        # i = 0
-        # j = yn-1
-        # k = zn-1
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 + 
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     0 + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        # # for the lower back right corner
-        # i = xn-1
-        # j = yn-1
-        # k = zn-1
-        # c[1,k,j,i] = c[0,k,j,i] + (
-        #     dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 + 
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
-        #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
-        #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     0 + 
-        #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-        
-        
-        
-        
-        
-        
         
         for i in range(xn): # width loop (x)
             for j in range(yn): # height loop (y)
@@ -700,7 +356,9 @@ def run_heat_transfer(x, y, z):
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-                    else:
+                    
+                    # for the interior points
+                    elif (0 < i < xn-1) and (0 < j < yn-1) and (0 < k < zn-1):
                         c[1,k,j,i] = c[0,k,j,i] + (
                             dt * alpha * ((c[0,k+1,j,i] - 2 * c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
                                           (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
@@ -716,7 +374,7 @@ def run_heat_transfer(x, y, z):
         minimum = np.min(c[1,:,:,:])
         
         # adding to the data at every 10 seconds
-        if save_step % dt*loop_counter == 0:
+        if save_step % interval_steps == 0:
             save_step_counter += 1
             data[save_step_counter] = c[1]
             
@@ -784,10 +442,10 @@ cube3_height = 0.012 # (m) the y value
 cube3_thickness = 0.012 # (m) the z value
 
 cube1_data = run_heat_transfer(cube1_width, cube1_height, cube1_thickness)
-#cube2_data = run_heat_transfer(cube2_width, cube2_height, cube2_thickness)
-#cube3_data = run_heat_transfer(cube3_width, cube3_height, cube3_thickness)
+cube2_data = run_heat_transfer(cube2_width, cube2_height, cube2_thickness)
+cube3_data = run_heat_transfer(cube3_width, cube3_height, cube3_thickness)
 
-print(cube1_data[0])
+print(len(cube1_data[0]))
 
 
 
@@ -804,7 +462,7 @@ print("Biot Number: " + str(round(cube1_data[3], 3)))
 for i in range(len(cube1_data[0])):
     # np.unravel_index(np.argmin(cube_array), cube_array.shape)
     position = np.unravel_index(np.argmin(np.min(cube1_data[0][i])), cube1_data[0][i].shape)
-    print("T = 0:   min heat: " + str(round(np.min(cube1_data[0][i]), 3)) + "    position: " + str(position))
+    print("T = " + str(i*10) + " seconds:   min heat: " + str(round(np.min(cube1_data[0][i]), 3)) + "    position: " + str(position))
 
 print("#################")
 print("Results of Cube 2")
@@ -817,7 +475,7 @@ print("Biot Number: " + str(round(cube2_data[3], 3)))
 # printing the minimum concentration at a certain position for every 10 seconds
 for i in range(len(cube2_data[0])):
     position = np.unravel_index(np.argmin(np.min(cube2_data[0][i])), cube2_data[0][i].shape)
-    print("T = 0:   min heat: " + str(round(np.min(cube2_data[0][i]), 3)) + "    position: " + str(position))
+    print("T = " + str(i*10) + " seconds:   min heat: " + str(round(np.min(cube2_data[0][i]), 3)) + "    position: " + str(position))
 
 print("#################")
 print("Results of Cube 3")
@@ -830,7 +488,7 @@ print("Biot Number: " + str(round(cube3_data[3], 3)))
 # printing the minimum concentration at a certain position for every 10 seconds
 for i in range(len(cube3_data[0])):
     position = np.unravel_index(np.argmin(np.min(cube3_data[0][i])), cube3_data[0][i].shape)
-    print("T = 0:   min heat: " + str(round(np.min(cube3_data[0][i]), 3)) + "    position: " + str(position))
+    print("T = " + str(i*10) + " seconds:   min heat: " + str(round(np.min(cube3_data[0][i]), 3)) + "    position: " + str(position))
 
 print()
 print()
