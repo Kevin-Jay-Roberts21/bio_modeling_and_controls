@@ -27,8 +27,9 @@ def run_heat_transfer(x, y, z):
     dy = 0.001 # (m)
     dz = 0.001 # (m)
     dt = 0.1 # (s)
-    maximum = 300 # (maximum time in seconds)
     
+    maximum = 60 # (maximum time in seconds)
+    S = int(maximum / save_step) + 1
     
     # defining the lengths of the width, height and thickness, respectively
     xn = int(x/dx) + 1
@@ -50,17 +51,13 @@ def run_heat_transfer(x, y, z):
     
     # zero is already every in c at this step, so we don't need to use T_space_0
     # but now we need to at 4 everywhere in the cube except for the boundary
-    for i in range(xn):
-        for j in range(yn):
-            for k in range(zn):
-                if (0 < i < xn-1) and (0 < j < yn-1) and (0 < k < zn-1):
-                    c[0, i, j, k] = T_time_0
+    c[0,:,:,:] = T_time_0 
     
     # defining the data (which will be added to at every 10 seconds)
     # it is set at a length of "1" for now, but we will add to it every 10 seconds
     # to add another element to it, we just grab c[1], and do data.append(c[1])
-    data = []
-    data.append(c[0,:,:,:])
+    data = np.zeros((S, zn, yn, xn))
+    data[0] = c[0]
     
     loop_counter = 0
     save_step_counter = 0
@@ -80,8 +77,8 @@ def run_heat_transfer(x, y, z):
         #         for k in range(1,zn-1): # thickness loop (z)
         #             c[1,k,j,i] = c[0,k,j,i] + (
         #                 dt*alpha*((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
-        #                           (c[0,k,j,i] - 2*c[0,k,j,i] + c[0,k,j,i])/dy**2 +
-        #                           (c[0,k,j,i] - 2*c[0,k,j,i] + c[0,k,j,i])/dx**2))
+        #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
+        #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,k,j,i-1])/dx**2))
         
         # #########
         # # FACES #
@@ -97,8 +94,8 @@ def run_heat_transfer(x, y, z):
         #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
         #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,k,j,i-1])/dx**2) +
         #             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #             0 +
+        #             0)
         
         # # updating the left face
         # for j in range(1,yn-1):
@@ -109,8 +106,8 @@ def run_heat_transfer(x, y, z):
         #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
         #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
         #                           (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #             0 +
+        #             0 +
         #             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                 
         # # updating the right face
@@ -122,8 +119,8 @@ def run_heat_transfer(x, y, z):
         #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
         #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
         #                           (0 - 2*c[0,k,j,i] + 2*c[0,i,j,k-1])/dx**2) +
-        #             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #             0 +
+        #             0 +
         #             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                 
         # # updating the top face
@@ -135,9 +132,9 @@ def run_heat_transfer(x, y, z):
         #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
         #                           (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
         #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
-        #             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
+        #             0 +
         #             2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #             0)
                 
         # # updating the bottom face
         # for i in range(1,xn-1):
@@ -148,9 +145,9 @@ def run_heat_transfer(x, y, z):
         #             dt * alpha * ((c[0,k+1,j,i] - 2*c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
         #                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
-        #             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #             0 +
+        #             0 +
+        #             0)
                 
         # # updating the back face
         # for i in range(1,xn-1):
@@ -162,8 +159,8 @@ def run_heat_transfer(x, y, z):
         #                           (c[0,k,j+1,i] - 2*c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
         #                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
         #             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #             0 +
+        #             0)
                      
         
         # #########
@@ -181,7 +178,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
         #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #         0)
             
         #     # for the front bottom edge
         #     j = yn-1
@@ -191,8 +188,8 @@ def run_heat_transfer(x, y, z):
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #         0 +
+        #         0)
             
         #     # for the back top edge
         #     j = 0
@@ -203,7 +200,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
         #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #         0)
             
         #     # for the back bottom edge
         #     j = yn-1
@@ -213,8 +210,8 @@ def run_heat_transfer(x, y, z):
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                       (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        #         0 +
+        #         0)
             
             
         # # updating the front left edge, front right edge, back left edge, back right edge
@@ -227,7 +224,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
         #                       (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0)/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
         #     # for the front right edge
@@ -238,7 +235,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
            
         #     # for the back left edge
@@ -249,7 +246,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
         #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
         #     # for the back right edge
@@ -260,7 +257,7 @@ def run_heat_transfer(x, y, z):
         #                       (1*c[0,k,j+1,i] - 2*c[0,k,j,i] + 1*c[0,k,j-1,i])/dy**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
         #         2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
         # # updating the middle top left edge, middle top right edge, middle bottom left edge, middle bottom, right edge
@@ -272,7 +269,7 @@ def run_heat_transfer(x, y, z):
         #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
         #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
         #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #         0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
@@ -283,7 +280,7 @@ def run_heat_transfer(x, y, z):
         #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
         #                       (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
+        #         0 +
         #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
@@ -294,8 +291,8 @@ def run_heat_transfer(x, y, z):
         #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                       (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-        #         0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
             
         #     # for the middle bottom right edge
@@ -305,8 +302,8 @@ def run_heat_transfer(x, y, z):
         #         dt * alpha * ((1*c[0,k+1,j,i] - 2*c[0,k,j,i] + 1*c[0,k-1,j,i])/dz**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                       (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
-        #         0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-        #         2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+        #         0 +
+        #         0 +
         #         2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
         
         
@@ -347,7 +344,7 @@ def run_heat_transfer(x, y, z):
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
         #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+        #     0 + 
         #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
         
         # # for the lower front right corner
@@ -359,13 +356,13 @@ def run_heat_transfer(x, y, z):
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
         #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+        #     0 + 
         #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
         
         # # for the upper back left corner
         # i = 0
         # j = 0
-        # k = xn-1
+        # k = zn-1
         # c[1,k,j,i] = c[0,k,j,i] + (
         #     dt * alpha * ((0 - 2*c[0,k,j,i] + 2*c[0,k-1,j,i])/dz**2 + 
         #                   (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
@@ -395,7 +392,7 @@ def run_heat_transfer(x, y, z):
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                   (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
         #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+        #     0 + 
         #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
         
         # # for the lower back right corner
@@ -407,8 +404,14 @@ def run_heat_transfer(x, y, z):
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
         #                   (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
         #     2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-        #     2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+        #     0 + 
         #     2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
+        
+        
+        
+        
+        
+        
         
         for i in range(xn): # width loop (x)
             for j in range(yn): # height loop (y)
@@ -444,7 +447,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     # for the lower front right corner
@@ -454,7 +457,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     # for the upper back left corner
@@ -484,7 +487,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) + 
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     # for the lower back right corner
@@ -494,7 +497,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) + 
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) + 
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) + 
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     
@@ -543,7 +546,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     
@@ -576,7 +579,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
                             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     # for the middle bottom right edge
@@ -586,7 +589,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j,i-1])/dx**2) +
                             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             2*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     
@@ -629,7 +632,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (1*c[0,k,j,i+1] - 2*c[0,k,j,i] + 1*c[0,k,j,i-1])/dx**2) +
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     
@@ -685,7 +688,7 @@ def run_heat_transfer(x, y, z):
                                           (0 - 2*c[0,k,j,i] + 2*c[0,k,j-1,i])/dy**2 +
                                           (c[0,k,j,i+1] - 2*c[0,k,j,i] + c[0,i,j,k-1])/dx**2) +
                             0*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
+                            0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
                     
                     # for the back face
@@ -697,7 +700,11 @@ def run_heat_transfer(x, y, z):
                             2*dt*h*alpha/(kh*dz)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dy)*(T_e - c[0,k,j,i]) +
                             0*dt*h*alpha/(kh*dx)*(T_e - c[0,k,j,i]))
-                    
+                    else:
+                        c[1,k,j,i] = c[0,k,j,i] + (
+                            dt * alpha * ((c[0,k+1,j,i] - 2 * c[0,k,j,i] + c[0,k-1,j,i])/dz**2 +
+                                          (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/dy**2 +
+                                          (c[0,k,j,i+1] - 2 * c[0,k,j,i] + c[0,k,j,i-1])/dx**2))
                     
                     
                 
@@ -710,23 +717,19 @@ def run_heat_transfer(x, y, z):
         
         # adding to the data at every 10 seconds
         if save_step % dt*loop_counter == 0:
-            data.append(c[1,:,:,:])
             save_step_counter += 1
+            data[save_step_counter] = c[1]
+            
             
         # Check if heat has at least target concentration
         if np.all(c[1,:,:,:] >= T_f):
-            # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
-            data.append(c[1,:,:,:])
+            save_step_counter += 1            
+            data[save_step_counter] = c[1]
             end_time = dt*loop_counter
             break
             
             
         print("Loop count: " + str(loop_counter))
-            
-    # adding the data from the last step (perhaps some time between a 10 second interval)
-    # but only adding if it was not already added from the last loop
-    if save_step*save_step_counter*dt != loop_counter*dt:
-        data.append(c[1,:,:,:])
     
     print("Finished a cube loop")
     end_time = dt*loop_counter
@@ -781,15 +784,19 @@ cube3_height = 0.012 # (m) the y value
 cube3_thickness = 0.012 # (m) the z value
 
 cube1_data = run_heat_transfer(cube1_width, cube1_height, cube1_thickness)
-cube2_data = run_heat_transfer(cube2_width, cube2_height, cube2_thickness)
-cube3_data = run_heat_transfer(cube3_width, cube3_height, cube3_thickness)
+#cube2_data = run_heat_transfer(cube2_width, cube2_height, cube2_thickness)
+#cube3_data = run_heat_transfer(cube3_width, cube3_height, cube3_thickness)
+
+print(cube1_data[0])
+
+
 
 print("PROBLEM 1a OUTPUT:")
 print("#################")
 print("Results of Cube 1")
-print("x: " )
-print("y: " )
-print("z: " )
+print("x: 1cm")
+print("y: 1cm")
+print("z: 1cm")
 print("Thermal diffusivity: " + str(cube1_data[4])) 
 print("Biot Number: " + str(round(cube1_data[3], 3)))
 
@@ -801,9 +808,9 @@ for i in range(len(cube1_data[0])):
 
 print("#################")
 print("Results of Cube 2")
-print("x: " )
-print("y: " )
-print("z: " )
+print("x: 1.1 cm")
+print("y: 1.1 cm")
+print("z: 1.1 cm")
 print("Thermal diffusivity: " + str(cube2_data[4])) 
 print("Biot Number: " + str(round(cube2_data[3], 3)))
 
@@ -814,9 +821,9 @@ for i in range(len(cube2_data[0])):
 
 print("#################")
 print("Results of Cube 3")
-print("x: " )
-print("y: " )
-print("z: " )
+print("x: 1.2 cm")
+print("y: 1.2 cm")
+print("z: 1.2 cm")
 print("Thermal diffusivity: " + str(cube3_data[4])) 
 print("Biot Number: " + str(round(cube3_data[3], 3)))
 
