@@ -15,6 +15,7 @@ from matplotlib import cm
 #############
 
 T_f = 15 # (C) # target temp
+T_i = 33 # (C) # initial temp 
 save_step = 10 # (save every 10 seconds)
 
 # other constant params
@@ -25,6 +26,8 @@ h = 100 # (W/(K*m^2)) heat transfer coefficient
 T_e = 90 # (C) external temperature
 alpha = kh/(p*C_p) # thermal diffusivity
 
+D = alpha
+
 dx = 0.001 # (m)
 dy = 0.001 # (m)
 dz = 0.001 # (m)
@@ -33,8 +36,8 @@ x_total = 0.010 # (m)
 y_total = 0.015 # (m)
 z_total = 0.035 # (m)
 
-Sh = round(k_m*dx/D,3) # sherwood number
 Bi = h*dx/kh # biot number
+Sh = Bi # sherwood number
 
 interior = dx**2/(4*D)
 side = dx**2/(2*D*(2 + Sh))
@@ -43,21 +46,27 @@ corner = dx**2/(4*D*(1 + Sh))
 dt_maxes = [interior, side, corner] 
 dt_max = min(dt_maxes)
 
-dt = round(dt_max, 3)
+dt = round(dt_max,3)
 
-Fo_m = D*dt/(dx**2)
-Fourier_number = (alpha*dt)/dx**2
+Fo = D*dt/(dx**2)
 V = x_total*y_total*z_total
 A = x_total*y_total
 
 estimate_cooling_time = (p*C_p*V)*18/(h*A*(90-80))
 
-t_x_1D = x_total**2/alpha
-t_y_1D = y_total**2/alpha
-t_z_1D = z_total**2/alpha
-t_x_2D = x_total**2/(4*alpha)
-t_y_2D = y_total**2/(4*alpha)
-t_z_2D = z_total**2/(4*alpha)
+L_x = 10 * 0.001
+L_y = 15/2 * 0.001
+L_z = 35/2 * 0.001
+
+t_x_1D = L_x**2/alpha
+t_y_1D = L_y**2/alpha
+t_z_1D = L_z**2/alpha
+t_x_2D = L_x**2/(4*alpha)
+t_y_2D = L_y**2/(4*alpha)
+t_z_2D = L_z**2/(4*alpha)
+
+save_step = 50
+interval_steps = int(save_step / dt)
 
 # a) Console Output
 print("PROBELM 1a OUTPUT")
@@ -67,185 +76,127 @@ print("Aspect Ratio: 10:15 = 2:3")
 print("Thermal Diffusivity: " + str(alpha))
 print("Biot number: " + str(Bi))
 print("dt_max: " + str(dt_max))
-print("Fourier number: " + str(Fourier_number))
-print("Final Cooling Time: " + str())
+print("Fourier number: " + str(Fo))
+print("Final Cooling Time: " + str(round(estimate_cooling_time)))
 print("Estimates of the heat transfer time in x, y and z dimensions:")
-print("t_x_1D = " + str(t_x_1D))
-print("t_y_1D = " + str(t_y_1D))
-print("t_z_1D = " + str(t_z_1D))
+print("t_x_1D = " + str(round(t_x_1D)))
+print("t_y_1D = " + str(round(t_y_1D)))
+print("t_z_1D = " + str(round(t_z_1D)))
 print("Estimate of the heat transfer in two dimensions for x, y and z:")
-print("t_x_2D = " + str(t_x_1D))
-print("t_y_2D = " + str(t_y_2D))
-print("t_z_2D = " + str(t_z_2D))
+print("t_x_2D = " + str(round(t_x_1D)))
+print("t_y_2D = " + str(round(t_y_2D)))
+print("t_z_2D = " + str(round(t_z_2D,3)))
+print()
+print()
 
 # b) Figure 1.a
-def run_2D_heat_transfer():
-    D = 0.252*(10**-4) # (m^2/day)
-    dx = 0.01 # (cm)
-    dy = 0.01 # (cm)
-    k_m = 3.1536*10**(-3) 
-    C_e = 20 # (g/l)
-    C_f = 15 # (g/l)
-    Sh = round(k_m*dx/D,3)
-    interior = dx**2/(4*D)
-    side = dx**2/(2*D*(2 + Sh))
-    corner = dx**2/(4*D*(1 + Sh))
-    dt_maxes = [interior, side, corner] 
-    dt_max = min(dt_maxes)
-    dt = round(dt_max, 3)
-    Fo = D*dt/(dx**2)
 
-    save_step = 15
-    interval_steps = int(save_step / dt)
+xn = int(x_total/dx)
+yn = int(y_total/dy)
 
-    # defining the concentration
-    final_x = 0.4 # (m)
-    final_y = 0.1 # (m)
+c = np.zeros((2, xn+1, yn+1)) # sets the initial conditions
+data = np.zeros((1, xn+1, yn+1))
+data[0] = c[0]
 
-    xn = int(final_x/dx)
-    yn = int(final_y/dy)
+step_saved = 0
 
-    c = np.zeros((2,xn+1,yn+1)) # sets the initial conditions
-    data = np.zeros((1, xn+1, yn+1))
-    data[0] = c[0]
+loop_counter = 0
+time = 0
+end_time = 0
+minimum = 0
 
-    step_saved = 0
+while minimum < T_f:
+    
+    c[0,:,:] = c[1,:,:]   
+    
+    for i in range(0,xn+1):
+        for j in range(0,yn+1):
+            if i == 0 and j == 0:  # upper left corner
+                c[1,i,j] = 2*Fo*(c[0,i+1,j] + c[0,i,j+1] + 0.5*2*Sh*T_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == 0 and j == yn:  # upper right corner
+                c[1,i,j] = 2*Fo*(c[0,i,j-1] + c[0,i+1,j] + 0.5*2*Sh*T_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == xn and j == 0:  # bottom left corner
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j+1] + 0.5*2*Sh*T_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == xn and j == yn:  # bottom right corner
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j-1] + 0.5*2*Sh*T_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == 0:  # top
+                c[1,i,j] = 2*Fo*(c[0,i+1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*T_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            elif j == 0:  # left side
+                c[1,i,j] = 2*Fo*(c[0,i,j+1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + 0*Sh*T_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            elif j == yn:  # right side
+                c[1,i,j] = 2*Fo*(c[0,i,j-1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + 0*Sh*T_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            elif i == xn:  # bottom
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*T_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            else:
+                c[1,i,j] = c[0,i,j] + D*dt*((c[0,i-1,j] - 2*c[0,i,j] + c[0,i+1,j])/(dx**2) + (c[0,i,j-1] - 2*c[0,i,j] + c[0,i,j+1])/(dy**2))
 
-    # adding the glucose on the side 
+    loop_counter += 1
+    time += dt
+    
+    # saving the data every 50 steps
+    if loop_counter % interval_steps == 0:
+        step_saved += 1
+        data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
+        data[step_saved] = c[1,:,:]
+        minimum = np.min(c[1,:,:])
+        # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
 
-    loop_counter = 0
-    time = 0
-    end_time = 0
-    minimum = 0
+    # Check if all agar has at least target concentration
+    if np.all(c[1,:,:] >= T_f):
+        # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+        step_saved += 1
+        data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
+        data[step_saved] = c[1,:,:]
+        end_time = dt*loop_counter
+        break
 
-    while minimum < C_f:
-        
-        c[0,:,:] = c[1,:,:]   
-        
-        #interior
-        for i in range(0,xn+1):
-            for j in range(0,yn+1):
-                if i == 0 and j == 0:  # upper left corner
-                    c[1,i,j] = 2*Fo*(c[0,i+1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
-                elif i == 0 and j == yn:  # upper right corner
-                    c[1,i,j] = 2*Fo*(c[0,i,j-1] + c[0,i+1,j] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
-                elif i == xn and j == 0:  # bottom left corner
-                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
-                elif i == xn and j == yn:  # bottom right corner
-                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j-1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
-                elif i == 0:  # top
-                    c[1,i,j] = 2*Fo*(c[0,i+1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
-                elif j == 0:  # left side
-                    c[1,i,j] = 2*Fo*(c[0,i,j+1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
-                elif j == yn:  # right side
-                    c[1,i,j] = 2*Fo*(c[0,i,j-1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
-                elif i == xn:  # bottom
-                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
-                else:
-                    c[1,i,j] = c[0,i,j] + D*dt*((c[0,i-1,j] - 2*c[0,i,j] + c[0,i+1,j])/(dx**2) + (c[0,i,j-1] - 2*c[0,i,j] + c[0,i,j+1])/(dy**2))
-
-        loop_counter += 1
-        time += dt
-        
-        # saving the data every 15 steps
-        if loop_counter % interval_steps == 0:
-            step_saved += 1
-            data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
-            data[step_saved] = c[1,:,:]
-            minimum = np.min(c[1,:,:])
-            # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
-            
-
-        # Check if all agar has at least target concentration
-        if np.all(c[1,:,:] >= C_f):
-            # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
-            step_saved += 1
-            data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
-            data[step_saved] = c[1,:,:]
-            end_time = dt*loop_counter
-            break
+for i in range(len(data)-1):
+    minimum = np.min(data[i,:,:])
+    time = i*save_step
+    print(f"{int(time)} secs: Snickers bar temp = {minimum:.3f} C")
+end_min = np.min(data[len(data)-1,:,:])
+print(f"{int(end_time)} secs: Snickers bar temp = {end_min:.3f} C")
 
 
+# c) Explain
+print("PROBELM 1c OUTPUT")
+print("i) ")
+print("ii) ")
+print()
+print()
 
 
+# d) Figure 1b
 
+# e) Explain
+print("PROBLEM 1e OUTPUT")
+print("i) ")
+print("ii) ")
+print("iii) ")
+print()
+print()
 
+#############
+# PROBLEM 2 #
+#############
 
+# a) Console output
+print("PROBLEM 2a OUTPUT")
+print("alpha: " + str())
+print("Biot number: " + str())
+print("T_max: " + str())
+# print coordinates for ...
+# print perc diff
+print()
+print()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# b) Explain
+print("PROBLEM 2b OUTPUT")
+print("i) ")
+print("ii) ")
+print("iii) ")
 
 def run_3D_heat_transfer(x, y, z):
     pass
 
-def plot_min_heats(time_grid, dimless_time_grid, mins, cube_id):
-    # Create a figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 
-    # First subplot for the original time plot
-    ax1.plot(time_grid, mins, marker='o', label='Cube ' + cube_id + ' Heat minimums')
-
-    # Customizing the first subplot
-    ax1.set_title('Heat Cube ' + cube_id + ' Mins at every 10 seconds')
-    ax1.set_xlabel("Time (seconds)")
-    ax1.set_ylabel('Minimum Heat in Cube ' + cube_id + ' Values')
-    ax1.set_xticks(time_grid)  # Set x-ticks to match the time values
-    ax1.legend()
-    ax1.grid()
-
-    # Second subplot for the dimensionless time plot
-    ax2.plot(dimless_time_grid, mins, marker='o', label='Cube ' + cube_id + ' Heat minimums')
-
-    # Customizing the second subplot
-    ax2.set_title('Heat Cube ' + cube_id + ' Mins (Dimensionless Time)')
-    ax2.set_xlabel("Dimensionless Time")
-    ax2.set_ylabel('Minimum Heat in Cube ' + cube_id + ' Values')
-    ax2.tick_params(axis='x', rotation=45)
-    ax2.set_xticks(dimless_time_grid)  # Set x-ticks to match the time values
-    ax2.legend()
-    ax2.grid()
-
-    # Adjust layout and show the plot
-    plt.tight_layout()
-    plt.show()
-
-def display_heat_data(cube_data, cube_lengths, cube_id):
-    print("#################")
-    print("Results of Cube " + cube_id)
-    print("x: " + cube_lengths + " cm")
-    print("y: " + cube_lengths + " cm")
-    print("z: " + cube_lengths + " cm")
-    print("Thermal diffusivity: " + str(cube_data[4])) 
-    print("Biot Number: " + str(round(cube_data[3], 3)))
-    
-    # printing the minimum concentration at a certain position for every 10 seconds
-    for i in range(cube_data[6]):
-        
-        if i == cube_data[6]-1:
-            time_of_min_heat = str(cube_data[2])
-        else:
-            time_of_min_heat = str(i*10)
-        
-        position = np.unravel_index(np.argmin(cube_data[0][i]), cube_data[0][i].shape)
-        print("T = " + time_of_min_heat + " seconds:   min heat: " + str(round(np.min(cube_data[0][i]), 3)) + "    position: " + str(position))
-
-cube1_data = run_heat_transfer(cube1_width, cube1_height, cube1_thickness)
-cube2_data = run_heat_transfer(cube2_width, cube2_height, cube2_thickness)
-cube3_data = run_heat_transfer(cube3_width, cube3_height, cube3_thickness)
