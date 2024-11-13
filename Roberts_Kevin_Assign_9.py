@@ -31,24 +31,23 @@ corner = dx**2/(4*D*(1 + Sh))
 dt_maxes = [interior, side, corner] 
 dt_max = min(dt_maxes)
 dt = round(dt_max, 3)
-Fo_m = D*dt/(dx**2)
+Fo = D*dt/(dx**2)
 
-maximum = 60
+
 save_step = 15
 interval_steps = int(save_step / dt)
 
-S = int(maximum / save_step) + 1
 
 # defining the concentration
-final_x = 0.1 # (m)
+final_x = 0.4 # (m)
 final_y = 0.1 # (m)
 
-xn = int(final_x/dx) + 1
-yn = int(final_y/dy) + 1
+xn = int(final_x/dx)
+yn = int(final_y/dy)
 
-c = np.zeros((2,xn,yn)) # sets the initial conditions
-data = np.zeros((S, xn, yn))
-data[0] = c[1]
+c = np.zeros((2,xn+1,yn+1)) # sets the initial conditions
+data = np.zeros((1, xn+1, yn+1))
+data[0] = c[0]
 
 step_saved = 0
 
@@ -57,31 +56,33 @@ step_saved = 0
 loop_counter = 0
 time = 0
 end_time = 0
+minimum = 0
 
-while time < maximum:
+while minimum < C_f:
     
     c[0,:,:] = c[1,:,:]   
     
     #interior
-    for i in range(1,xn-1):
-        for j in range(1,yn-1):
-            c[1, i, j] = c[0,i,j] + D*dt*((c[0,i-1,j] - 2*c[0,i,j] + c[0,i+1,j])/(dx**2) + (c[0,i,j-1] - 2*c[0,i,j] + c[0,i,j+1])/(dy**2))
-    
-    # sides, left, right, bottom and top respectively
-    for k in range(1, yn-1):
-        c[1, 0, k] = 2*Fo_m*(c[0,1,k] + 1/2*(c[0,0,k-1] + c[0,0,k+1]) + Sh*C_e) + (1 - 4*Fo_m - 2*Fo_m*Sh)*c[0,0,k]
-    for k in range(1, yn-1):
-        c[1, xn-1, k] = 2*Fo_m*(c[0,xn-2,j] + 1/2*(c[0,xn-1,k-1] + c[0,xn-1,k+1]) + 0*Sh*C_e) + (1 - 4*Fo_m - 0*2*Fo_m*Sh)*c[0,xn-1,k]
-    for l in range(1, xn-1):
-        c[1, l, 0] = 2*Fo_m*(c[0,l,0] + 1/2*(c[0,l-1,0] + c[0,l+1,0]) + Sh*C_e) + (1 - 4*Fo_m - 2*Fo_m*Sh)*c[0,l,0]
-    for l in range(1, xn-1):
-        c[1, l, yn-1] = 2*Fo_m*(c[0,l,yn-2] + 1/2*(c[0,l-1,yn-1] + c[0,l+1,yn-1]) + Sh*C_e) + (1 - 4*Fo_m - 2*Fo_m*Sh)*c[0,l,yn-1]
-    
-    # corners, bottom left, top left, bottom right and top right respectively
-    c[1, 0, 0] = 2*Fo_m*(c[0,0,1] + c[0,1,0] + 0.5*2*Sh*C_e) + (1 - 4*Fo_m - 0.5*4*Fo_m*Sh)*c[0,0,0]
-    c[1, 0, yn-1] = 2*Fo_m*(c[0,0,(yn-1)-1] + c[0,1,(yn-1)] + 0.5*2*Sh*C_e) + (1 - 4*Fo_m - 0.5*4*Fo_m*Sh)*c[0,0,(yn-1)]
-    c[1, xn-1, 0] = 2*Fo_m*(c[0,(xn-1)-1,0] + c[0,(xn-1),1] + 0.5*2*Sh*C_e) + (1 - 4*Fo_m - 0.5*4*Fo_m*Sh)*c[0,(xn-1),0]
-    c[1, xn-1, yn-1] = 2*Fo_m*(c[0,(xn-1),(yn-1)-1] + c[0,(xn-1)-1,(yn-1)] + 0.5*2*Sh*C_e) + (1 - 4*Fo_m - 0.5*4*Fo_m*Sh)*c[0,(xn-1),(yn-1)]
+    for i in range(0,xn+1):
+        for j in range(0,yn+1):
+            if i == 0 and j == 0:  # upper left corner
+                c[1,i,j] = 2*Fo*(c[0,i+1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == 0 and j == yn:  # upper right corner
+                c[1,i,j] = 2*Fo*(c[0,i,j-1] + c[0,i+1,j] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == xn and j == 0:  # bottom left corner
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == xn and j == yn:  # bottom right corner
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j-1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+            elif i == 0:  # top
+                c[1,i,j] = 2*Fo*(c[0,i+1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            elif j == 0:  # left side
+                c[1,i,j] = 2*Fo*(c[0,i,j+1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
+            elif j == yn:  # right side
+                c[1,i,j] = 2*Fo*(c[0,i,j-1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
+            elif i == xn:  # bottom
+                c[1,i,j] = 2*Fo*(c[0,i-1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+            else:
+                c[1,i,j] = c[0,i,j] + D*dt*((c[0,i-1,j] - 2*c[0,i,j] + c[0,i+1,j])/(dx**2) + (c[0,i,j-1] - 2*c[0,i,j] + c[0,i,j+1])/(dy**2))
 
     loop_counter += 1
     time += dt
@@ -89,6 +90,7 @@ while time < maximum:
     # saving the data every 15 steps
     if loop_counter % interval_steps == 0:
         step_saved += 1
+        data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
         data[step_saved] = c[1,:,:]
         minimum = np.min(c[1,:,:])
         # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
@@ -98,6 +100,7 @@ while time < maximum:
     if np.all(c[1,:,:] >= C_f):
         # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
         step_saved += 1
+        data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
         data[step_saved] = c[1,:,:]
         end_time = dt*loop_counter
         break
@@ -109,7 +112,7 @@ print("y[m]: " + str(round(c[1][1][yn-1],3)))
 print("Aspect Ratio: 40x10x10")
 print("Diffusion time to >= 15 g/l: " + str(loop_counter*dt))
 print("Sherwood Number: " + str(Sh))
-for i in range(S-1):
+for i in range(len(data)-1):
     minimum = np.min(data[i,:,:])
     time = i*15
     print(f"Day {int(time)}: Minimum analgesic concentration = {minimum:.3f} g/L")
@@ -122,11 +125,12 @@ print()
 # getting the all the minimum values at each 15 days
 mins = []
 
-for i in range(S):
+for i in range(len(data)):
     mins.append(np.min(data[i]))
 
 L = 0.1 # (m)
-t = [0, 15, 30, 45, 50]
+t = np.arange(0, (len(data)-1)*save_step, save_step)
+t= np.append(t, end_time)
 dim_less_time = [round(i * (D / L**2), 3) for i in t]
 
 # Create a figure with two subplots
@@ -169,11 +173,11 @@ print()
 
 # d) Figure 1b 
 # Plot concentration profiles in 3D
-x_grid = np.linspace(0, final_x, xn)  # x-axis points
-y_grid = np.linspace(0, final_y, yn)  # y-axis points
-X, Y = np.meshgrid(x_grid, y_grid)         # create the meshgrid
+x_grid = np.linspace(0, final_x, xn+1)  # x-axis points
+y_grid = np.linspace(0, final_y, yn+1)  # y-axis points
+X, Y = np.meshgrid(x_grid, y_grid)      # create the meshgrid
 
-for m in range(S-1):
+for m in range(len(data)-1):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     
