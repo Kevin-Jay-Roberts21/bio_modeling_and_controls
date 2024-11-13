@@ -79,8 +79,91 @@ print("t_y_2D = " + str(t_y_2D))
 print("t_z_2D = " + str(t_z_2D))
 
 # b) Figure 1.a
-def run_2D_heat_transfer(x, y, z):
-    pass
+def run_2D_heat_transfer():
+    D = 0.252*(10**-4) # (m^2/day)
+    dx = 0.01 # (cm)
+    dy = 0.01 # (cm)
+    k_m = 3.1536*10**(-3) 
+    C_e = 20 # (g/l)
+    C_f = 15 # (g/l)
+    Sh = round(k_m*dx/D,3)
+    interior = dx**2/(4*D)
+    side = dx**2/(2*D*(2 + Sh))
+    corner = dx**2/(4*D*(1 + Sh))
+    dt_maxes = [interior, side, corner] 
+    dt_max = min(dt_maxes)
+    dt = round(dt_max, 3)
+    Fo = D*dt/(dx**2)
+
+    save_step = 15
+    interval_steps = int(save_step / dt)
+
+    # defining the concentration
+    final_x = 0.4 # (m)
+    final_y = 0.1 # (m)
+
+    xn = int(final_x/dx)
+    yn = int(final_y/dy)
+
+    c = np.zeros((2,xn+1,yn+1)) # sets the initial conditions
+    data = np.zeros((1, xn+1, yn+1))
+    data[0] = c[0]
+
+    step_saved = 0
+
+    # adding the glucose on the side 
+
+    loop_counter = 0
+    time = 0
+    end_time = 0
+    minimum = 0
+
+    while minimum < C_f:
+        
+        c[0,:,:] = c[1,:,:]   
+        
+        #interior
+        for i in range(0,xn+1):
+            for j in range(0,yn+1):
+                if i == 0 and j == 0:  # upper left corner
+                    c[1,i,j] = 2*Fo*(c[0,i+1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+                elif i == 0 and j == yn:  # upper right corner
+                    c[1,i,j] = 2*Fo*(c[0,i,j-1] + c[0,i+1,j] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+                elif i == xn and j == 0:  # bottom left corner
+                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j+1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+                elif i == xn and j == yn:  # bottom right corner
+                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + c[0,i,j-1] + 0.5*2*Sh*C_e) + (1 - 4*Fo - 0.5*4*Fo*Sh)*c[0,i,j]
+                elif i == 0:  # top
+                    c[1,i,j] = 2*Fo*(c[0,i+1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+                elif j == 0:  # left side
+                    c[1,i,j] = 2*Fo*(c[0,i,j+1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
+                elif j == yn:  # right side
+                    c[1,i,j] = 2*Fo*(c[0,i,j-1] + 0.5*(c[0,i-1,j] + c[0,i+1,j]) + Sh*C_e) + (1 - 4*Fo - 2*Fo*Sh)*c[0,i,j]
+                elif i == xn:  # bottom
+                    c[1,i,j] = 2*Fo*(c[0,i-1,j] + 0.5*(c[0,i,j-1] + c[0,i,j+1]) + 0*Sh*C_e) + (1 - 4*Fo - 0*2*Fo*Sh)*c[0,i,j]
+                else:
+                    c[1,i,j] = c[0,i,j] + D*dt*((c[0,i-1,j] - 2*c[0,i,j] + c[0,i+1,j])/(dx**2) + (c[0,i,j-1] - 2*c[0,i,j] + c[0,i,j+1])/(dy**2))
+
+        loop_counter += 1
+        time += dt
+        
+        # saving the data every 15 steps
+        if loop_counter % interval_steps == 0:
+            step_saved += 1
+            data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
+            data[step_saved] = c[1,:,:]
+            minimum = np.min(c[1,:,:])
+            # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
+            
+
+        # Check if all agar has at least target concentration
+        if np.all(c[1,:,:] >= C_f):
+            # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+            step_saved += 1
+            data = np.append(data, np.zeros((1, xn+1, yn+1)), axis=0)
+            data[step_saved] = c[1,:,:]
+            end_time = dt*loop_counter
+            break
 
 
 
