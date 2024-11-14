@@ -310,7 +310,7 @@ dt_maxes = [interior, side, corner]
 dt_max = min(dt_maxes)
 
 dt = round(dt_max,3)
-
+dt = 0.5
 Fo = D*dt/(dx**2)
 V = x_total*y_total*z_total
 A = x_total*y_total
@@ -335,7 +335,7 @@ xn = int(x_total/dx)
 yn = int(y_total/dy)
 zn = int(z_total/dz)
 
-c = T_i * np.ones((2, zn+1, yn+1, xn+1)) # sets the initial conditions
+c = T_i * np.ones((2, zn+1, yn+1, xn+1))  # sets the initial conditions
 data = np.zeros((1, zn+1, yn+1, xn+1))
 data[0] = c[0]
 
@@ -344,29 +344,27 @@ step_saved = 0
 loop_counter = 0
 time = 0
 end_time = 0
-
-while True:
-    
+while True: 
     c[0,:,:,:] = c[1,:,:,:]
-    
     for i in range(0, xn+1):
         for j in range(0, yn+1):
             for k in range(0, zn+1):
-                # CORNERS
+                ###########
+                # CORNERS #
+                ###########
                 if i == 0 and j == 0 and k == 0: # left, top, forward
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                        (2*c[0,k+1,j,i] - 2*c[0,k,j,i] + 0)/dz**2 +
-                        (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/dy**2 +
-                        (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/dx**2) +
-                            2*dt*h*alpha/(kh*dz)*(Te-c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dy)*(Te-c[0,k,j,i]) +
-                            2*dt*h*alpha/(kh*dx)*(Te-c[0,k,j,i]))                    
-                
+                        (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
+                        (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
+                        (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
+                            2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
+                            2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
+                            2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
                 elif i == 0 and j == 0 and k == zn: # left, top, back
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                        (2*c[0,k-1,j,i] - 2*c[0,k,j,i] + 0)/ dz**2 +
-                        (2*c[0,k,j+1,i] - 2*c[0,k,j,i] + 0)/ dy**2 +
-                        (2*c[0,k,j,i+1] - 2*c[0,k,j,i] + 0)/ dx**2) +
+                        (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
+                        (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
+                        (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
@@ -386,15 +384,13 @@ while True:
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
-                
-                    
                 elif i == 0 and j == yn and k == 0: # left, bottom, forward
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
                         (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
                         (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                            2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
+                            0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
                 elif i == 0 and j == yn and k == zn: # left, bottom, back
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
@@ -402,7 +398,7 @@ while True:
                         (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
                         (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                            2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
+                            0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
                 elif i == xn and j == yn and k == zn: # right, bottom, back
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
@@ -410,7 +406,7 @@ while True:
                         (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
                         (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                            2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
+                            0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
                 elif i == xn and j == yn and k == 0: # right, bottom, forward
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
@@ -418,11 +414,11 @@ while True:
                         (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
                         (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                            2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
+                            0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
                 #########
-                # EDGES #
-                #########                   
+                # EDGES #                   
+                #########
                 elif i == 0 and k == 0: # left, forward edge
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
@@ -455,9 +451,6 @@ while True:
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
                             0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
-                
-                
-                
                 elif j == 0 and k == 0: # front, upper edge
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
@@ -490,8 +483,6 @@ while True:
                             2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
                             0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))
-                
-                                   
                 elif i == 0 and j == 0: # left, upper edge
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (1*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 1*c[0,k-1,j,i] )/ dz**2 +
@@ -526,7 +517,7 @@ while True:
                             2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
                 #########
                 # FACES #
-                #########                   
+                #########                  
                 elif k == 0: # front face
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0)/ dz**2 +
@@ -575,9 +566,7 @@ while True:
                             0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
                             0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
                             0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
-                ############
-                # INTERIOR #
-                ############                         
+                # CENTER                            
                 else:
                     c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
                         (c[0,k+1,j,i] - 2 * c[0,k,j,i] + c[0,k-1,j,i])/ dz**2 +
@@ -616,20 +605,21 @@ mins = []
 maxs = []
 
 # Compute minimum and maximum values for each time step
-for i in range(len(data)):
+for i in range(len(data)-1):
     mins.append(np.min(data[i]))
     maxs.append(np.max(data[i]))
 
 # printing the max temp at a certain position for every 50 seconds
-for i in range(len(data)):
+for i in range(len(data)-1):
     
     if i == len(data)-1:
         time_of_max_heat = str(end_time)
     else:
-        time_of_max_heat = str(i*10)
+        time_of_max_heat = str(i*50)
     
     position = np.unravel_index(np.argmax(data[i]), data[i].shape)
     print("T = " + time_of_max_heat + " seconds:   max heat: " + str(round(np.max(data[i]), 3)) + "    position: " + str(position))
+
 print("Percentage Difference: " + str(perc_difference))
 print()
 print()
@@ -638,7 +628,6 @@ print()
 # Plotting parameters
 L = L_y  # (m)
 t = np.arange(0, (len(data) - 1) * save_step, save_step)
-t = np.append(t, end_time)
 dim_less_time = [round(i * (D / L**2), 3) for i in t]
 
 # Create a figure with two subplots
