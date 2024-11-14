@@ -31,297 +31,277 @@ dt = 0.1 # (s)
 
 def run_heat_transfer(x, y, z):
     
-    interval_steps = int(save_step / dt)
-    
-    # defining the lengths of the width, height and thickness, respectively
     xn = int(x/dx)
     yn = int(y/dy)
     zn = int(z/dz)
-    
-    # calculating the biot number and thermal diffusivity
-    Bi = h*dx/kh # biot number
-    Td = alpha # thermal diffusivity
-    
-    # defining the boundary conditions
-    T_space_0 = 0 # (C)
-
-    # defining the cube (which will change at every time step)
-    c = np.zeros((2, zn+1, yn+1, xn+1))
-    
-    # zero is already every in c at this step, so we don't need to use T_space_0
-    # but now we need to at 4 everywhere in the cube except for the boundary
-    c[0,:,:,:] = T_i 
-    
-    # defining the data (which will be added to at every 10 seconds)
-    # it is set at a length of "1" for now, but we will add to it every 10 seconds
-    # to add another element to it, we just grab c[1], and do data.append(c[1])
-    data = np.zeros((1, zn+1, yn+1, xn+1))
-    data[0] = c[0]
-    
+    Bi = h * dx / kh
+    Sh = Bi
+    dt = 0.1 # seconds
+    Fo = alpha * dt / (dx ** 2)
+   
+    data = np.zeros([500, xn+1, yn+1, zn+1])
+   
+    t = 0
+    n = 0
     step_saved = 0
-    loop_counter = 0
-    save_step_counter = 0
-    minimum = 0 # just needs to be less that T_f to begin with, it will change in the loop
-    time = 0
-    
-    while minimum < T_f:
-        
-        c[0,:,:,:] = c[1,:,:,:]   
-        
-        for i in range(0,xn+1): # width loop (x)
-            for j in range(0,yn+1): # height loop (y)
-                for k in range(0,zn+1): # thickness loop (z)
-                    
-                
-                    # defining cases all of the corners    
-                    # left, top, forward
-                    if i == 0 and j == 0 and k == 0: 
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+    cube = T_i * np.ones([2, zn+1, yn+1, xn+1])
+    data = np.zeros((1, zn+1, yn+1, xn+1))
+    data[0] = cube[0]
+   
+    cube_T_min = []
+    cube_time = []
+    cube_dimless_time = []
+   
+    while np.min(cube[0,:,:,:]) <= T_f:
+        t += 1
+        cube[0,:,:,:] = cube[1,:,:,:]
+        for i in range(0, xn+1):
+            for j in range(0, yn+1):
+                for k in range(0, zn+1):
+                    # CORNERS
+                    if i == 0 and j == 0 and k == 0: # left, top, forward
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     
                     elif i == 0 and j == 0 and k == zn: # left, top, back
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == xn and j == 0 and k == zn: # right, top, back
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == xn and j == 0 and k == 0: # right, top, forward
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     ##############################################                    
                     elif i == 0 and j == yn and k == 0: # left, bottom, forward
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == 0 and j == yn and k == zn: # left, bottom, back
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == xn and j == yn and k == zn: # right, bottom, back
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == xn and j == yn and k == 0: # right, bottom, forward
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     # EDGES                    
                     elif i == 0 and k == 0: # left, forward edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i] )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (1*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 1*cube[0,k,j-1,i] )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == 0 and k == zn: # left, back edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i] )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (1*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 1*cube[0,k,j-1,i] )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == xn and k == zn: # right, back edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i] )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (1*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 1*cube[0,k,j-1,i] )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == xn and k == 0: # right, forward edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (1*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 1*c[0,k,j-1,i] )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (1*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 1*cube[0,k,j-1,i] )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     #####################################
                     elif j == 0 and k == 0: # front, upper edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (1*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 1*c[0,k,j,i-1] )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (1*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 1*cube[0,k,j,i-1] )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif j == 0 and k == zn: # back, upper edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (1*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 1*c[0,k,j,i-1] )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (1*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 1*cube[0,k,j,i-1] )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif j == yn and k == zn: # back, lower edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (1*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 1*c[0,k,j,i-1] )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (1*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 1*cube[0,k,j,i-1] )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif j == yn and k == 0: # front, lower edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0 )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (1*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 1*c[0,k,j,i-1] )/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0 )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (1*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 1*cube[0,k,j,i-1] )/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))
                     ########################################                    
                     elif i == 0 and j == 0: # left, upper edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (1*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 1*c[0,k-1,j,i] )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (1*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 1*cube[0,k-1,j,i] )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == xn and j == 0: # right, upper edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (1*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 1*c[0,k-1,j,i] )/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (1*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 1*cube[0,k-1,j,i] )/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif i == xn and j == yn: # right, lower edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (1*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 1*c[0,k-1,j,i] )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (1*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 1*cube[0,k-1,j,i] )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == 0 and j == yn: # left, lower edge
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (1*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 1*c[0,k-1,j,i] )/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0 )/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0 )/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (1*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 1*cube[0,k-1,j,i] )/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0 )/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0 )/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     # FACES                    
                     elif k == 0: # front face
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (2*c[0,k+1,j,i] - 2 * c[0,k,j,i] + 0)/ dz**2 +
-                            (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/ dy**2 +
-                            (c[0,k,j,i+1] - 2 * c[0,k,j,i] + c[0,k,j,i-1])/ dx**2) +
-                                2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (2*cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + 0)/ dz**2 +
+                            (cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + cube[0,k,j-1,i])/ dy**2 +
+                            (cube[0,k,j,i+1] - 2 * cube[0,k,j,i] +cube[0,k,j,i-1])/ dx**2) +
+                                2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     elif k == zn: # back face
-                         c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                             (2*c[0,k-1,j,i] - 2 * c[0,k,j,i] + 0)/ dz**2 +
-                             (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/ dy**2 +
-                             (c[0,k,j,i+1] - 2 * c[0,k,j,i] + c[0,k,j,i-1])/ dx**2) +
-                                 2*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                 0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                 0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                                      
+                         cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                             (2*cube[0,k-1,j,i] - 2 * cube[0,k,j,i] + 0)/ dz**2 +
+                             (cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + cube[0,k,j-1,i])/ dy**2 +
+                             (cube[0,k,j,i+1] - 2 * cube[0,k,j,i] +cube[0,k,j,i-1])/ dx**2) +
+                                 2*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                 0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                 0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                                      
                     ###################################                    
                     elif i == 0: # left face
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (c[0,k+1,j,i] - 2 * c[0,k,j,i] + c[0,k-1,j,i])/ dz**2 +
-                            (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/ dy**2 +
-                            (2*c[0,k,j,i+1] - 2 * c[0,k,j,i] + 0)/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (cube[0,k+1,j,i] - 2 * cube[0,k,j,i] +cube[0,k-1,j,i])/ dz**2 +
+                            (cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + cube[0,k,j-1,i])/ dy**2 +
+                            (2*cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + 0)/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif i == xn: # right face
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (c[0,k+1,j,i] - 2 * c[0,k,j,i] +c[0,k-1,j,i])/ dz**2 +
-                            (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/ dy**2 +
-                            (2*c[0,k,j,i-1] - 2 * c[0,k,j,i] + 0)/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                    
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (cube[0,k+1,j,i] - 2 * cube[0,k,j,i] +cube[0,k-1,j,i])/ dz**2 +
+                            (cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + cube[0,k,j-1,i])/ dy**2 +
+                            (2*cube[0,k,j,i-1] - 2 * cube[0,k,j,i] + 0)/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                    
                     ########################################                    
                     elif j == 0: # top face
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (c[0,k+1,j,i] - 2 * c[0,k,j,i] +c[0,k-1,j,i])/ dz**2 +
-                            (2*c[0,k,j+1,i] - 2 * c[0,k,j,i] + 0)/ dy**2 +
-                            (c[0,k,j,i+1] - 2 * c[0,k,j,i] +c[0,k,j,i-1])/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                2*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (cube[0,k+1,j,i] - 2 * cube[0,k,j,i] +cube[0,k-1,j,i])/ dz**2 +
+                            (2*cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + 0)/ dy**2 +
+                            (cube[0,k,j,i+1] - 2 * cube[0,k,j,i] +cube[0,k,j,i-1])/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                2*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     elif j == yn: # bottom face
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (c[0,k+1,j,i] - 2 * c[0,k,j,i] +c[0,k-1,j,i])/ dz**2 +
-                            (2*c[0,k,j-1,i] - 2 * c[0,k,j,i] + 0)/ dy**2 +
-                            (c[0,k,j,i+1] - 2 * c[0,k,j,i] +c[0,k,j,i-1])/ dx**2) +
-                                0*dt * h* alpha/(kh*dz)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dy)*(Te-c[0,k,j,i] ) +
-                                0*dt * h* alpha/(kh*dx)*(Te-c[0,k,j,i] ))                        
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (cube[0,k+1,j,i] - 2 * cube[0,k,j,i] +cube[0,k-1,j,i])/ dz**2 +
+                            (2*cube[0,k,j-1,i] - 2 * cube[0,k,j,i] + 0)/ dy**2 +
+                            (cube[0,k,j,i+1] - 2 * cube[0,k,j,i] +cube[0,k,j,i-1])/ dx**2) +
+                                0*dt * h* alpha/(kh*dz)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dy)*(Te-cube[0,k,j,i] ) +
+                                0*dt * h* alpha/(kh*dx)*(Te-cube[0,k,j,i] ))                        
                     # CENTER                            
                     else:
-                        c[1,k,j,i] = c[0,k,j,i] + (dt * alpha * (
-                            (c[0,k+1,j,i] - 2 * c[0,k,j,i] + c[0,k-1,j,i])/ dz**2 +
-                            (c[0,k,j+1,i] - 2 * c[0,k,j,i] + c[0,k,j-1,i])/ dy**2 +
-                            (c[0,k,j,i+1] - 2 * c[0,k,j,i] + c[0,k,j,i-1])/ dx**2) )
-                    
-        loop_counter += 1
-        time += dt
-        
-        # saving the data every 15 steps
-        if loop_counter % interval_steps == 0:
+                        cube[1,k,j,i] = cube[0,k,j,i] + (dt * alpha * (
+                            (cube[0,k+1,j,i] - 2 * cube[0,k,j,i] + cube[0,k-1,j,i])/ dz**2 +
+                            (cube[0,k,j+1,i] - 2 * cube[0,k,j,i] + cube[0,k,j-1,i])/ dy**2 +
+                            (cube[0,k,j,i+1] - 2 * cube[0,k,j,i] + cube[0,k,j,i-1])/ dx**2) )
+       
+        if t % int(10/dt) == 0:
             step_saved += 1
             data = np.append(data, np.zeros((1, zn+1, yn+1, xn+1)), axis=0)
-            data[step_saved] = c[1,:,:,:]
-            minimum = np.min(c[1,:,:,:])
-            # print(f"Day {int{time}}: Minimum mass concentration = {minimum:.4f} g/L")
-            
-
-        # Check if all agar has at least target concentration
-        if np.all(c[1,:,:] >= T_f):
-            # print(f"All mass got to at least {C_f} g/L at day {time:.2f}")
+            data[step_saved] = cube[1,:,:,:]
+           
+        T_min = np.min(cube[0,:,:,:])
+        cube_T_min.append(T_min)
+        cube_time.append(t * dt)
+        cube_dimless_time.append((t * dt * alpha) / (x ** 2))
+           
+        if np.min(cube[1,:,:,:]) >= T_f:
             step_saved += 1
             data = np.append(data, np.zeros((1, zn+1, yn+1, xn+1)), axis=0)
-            data[step_saved] = c[1,:,:,:]
-            end_time = dt*loop_counter
+            data[step_saved] = cube[1,:,:,:]
+            end_time = t * dt
             break
     
-    end_time = round(dt*loop_counter,3)
+    end_time = round(dt*t,3)
     
-    all_data = [data, c, end_time, Bi, Td, alpha]
+    all_data = [data, cube, end_time, Bi, 1, alpha]
     
     return all_data
 
