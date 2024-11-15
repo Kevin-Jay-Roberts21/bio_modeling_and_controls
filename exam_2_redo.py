@@ -115,7 +115,7 @@ print()
 # PROBELM 4 #
 #############
 
-t_D = 0.2**2/(4*D)
+t_D = 0.1**2/(4*D)
 print("QUESTION 4 ANSWER: " + str(t_D))
 print()
 
