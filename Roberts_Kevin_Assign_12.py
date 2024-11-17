@@ -139,7 +139,7 @@ for i in range(1, tn): # starting at 1 because we already have the initial condi
     for j in range(xn):
         if j == 0: # for the top row
              A[j, j] = 2 + 2*r
-             A[j, j+1] = -2*r
+             A[j, j+1] = -r
              B[j] = r*temp[i-1, j] + (2 - 2*r)*temp[i-1, j+1] + r*temp[i-1, j+2] + r*temp[i-1, j]         
         
         elif j == xn-1: # for the bottom row
