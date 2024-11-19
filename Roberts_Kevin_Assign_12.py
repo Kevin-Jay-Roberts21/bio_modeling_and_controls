@@ -77,7 +77,7 @@ for r in r_list:
             A0[i, i-1] = -r    
             A0[i, i] = 2 + 2*r
             A0[i, i+1] = -r
-            B0[i] = r*T[i-1] + (2 - 2*r)*T[i] + r*T[i+1]
+            B0[i] = r*T[i-1] + (2 - 2*r)*T[i] + r*T[i-1]
 
     A_list.append(A0)
     B_list.append(B0)
@@ -142,14 +142,14 @@ def get_u_implicit():
     
         for j in range(xn):
             if j == 0: # for the top row
-                  A[j, j] = 2 + 2*r
-                  A[j, j+1] = -r
-                  B[j] = r*u[i-1, j] + (2 - 2*r)*u[i-1, j+1] + r*u[i-1, j+2] + r*u[i-1, j]         
+                  A[j, j] = 1
+                  A[j, j+1] = 0
+                  B[j] = 0      
             
             elif j == xn-1: # for the bottom row
-                A[j, j] = 2 + 2*r
-                A[j, j-1] = -2*r
-                B[j] = r*u[i-1, j-2] + (2 - 2*r)*u[i-1, j-1] + r*u[i-1, j] + r*u[i-1, j]
+                A[j, j] = 1
+                A[j, j-1] = 0
+                B[j] = 0
             
             else: # for the middle stuff
                 A[j, j-1] = -r    
@@ -200,26 +200,45 @@ def get_u_explicit():
 u_explicit = get_u_explicit()
 u_implicit = get_u_implicit()
 
-plt.figure()
+plt.figure(figsize=(10, 6))
 
-x = np.arange(0, len(u_implicit[0,:])*dx, dx)
+x = np.arange(0, len(u_implicit[0,:]) * dx, dx)
 
 t1 = int(0.01/dt)
 t2 = int(0.02/dt)
 t3 = int(0.1/dt)
 t4 = int(0.5/dt)
 
-plt.plot(x, u_implicit[0,:], label='u at t=0, T_max = {}'.format(round(max(u_implicit[0,:]),3)))
-plt.plot(x, u_implicit[t1,:], label='u at t=0.01, T_max = {}'.format(round(max(u_implicit[t1,:]),3)))
-plt.plot(x, u_implicit[t2,:], label='u at t=0.02, T_max = {}'.format(round(max(u_implicit[t2,:]),3)))
-plt.plot(x, u_implicit[t3,:], label='u at t=0.1, T_max = {}'.format(round(max(u_implicit[t3,:]),3)))
-plt.plot(x, u_implicit[t4,:], label='u at t=0.5, T_max = {}'.format(round(max(u_implicit[t4,:]),3)))
+# Plotting implicit scheme
+plt.plot(x, u_implicit[0,:], 'b-', label='Implicit: t=0, T_max = {:.3f}'.format(max(u_implicit[0,:])))
+plt.plot(x, u_implicit[t1,:], 'b--', label='Implicit: t=0.01, T_max = {:.3f}'.format(max(u_implicit[t1,:])))
+plt.plot(x, u_implicit[t2,:], 'b-.', label='Implicit: t=0.02, T_max = {:.3f}'.format(max(u_implicit[t2,:])))
+plt.plot(x, u_implicit[t3,:], 'b:', label='Implicit: t=0.1, T_max = {:.3f}'.format(max(u_implicit[t3,:])))
+plt.plot(x, u_implicit[t4,:], 'b-.', label='Implicit: t=0.5, T_max = {:.3f}'.format(max(u_implicit[t4,:])))
 
-# Adding a title and labels
+# Plotting explicit scheme
+plt.plot(x, u_explicit[0,:], 'r-', label='Explicit: t=0, T_max = {:.3f}'.format(max(u_explicit[0,:])))
+plt.plot(x, u_explicit[t1,:], 'r--', label='Explicit: t=0.01, T_max = {:.3f}'.format(max(u_explicit[t1,:])))
+plt.plot(x, u_explicit[t2,:], 'r-.', label='Explicit: t=0.02, T_max = {:.3f}'.format(max(u_explicit[t2,:])))
+plt.plot(x, u_explicit[t3,:], 'r:', label='Explicit: t=0.1, T_max = {:.3f}'.format(max(u_explicit[t3,:])))
+plt.plot(x, u_explicit[t4,:], 'r-.', label='Explicit: t=0.5, T_max = {:.3f}'.format(max(u_explicit[t4,:])))
+
+# Adding title, labels, and legend
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.title('Comparison of explicit and implicit solutions.')
+plt.title('Comparison of Explicit and Implicit Solutions')
 plt.xlabel('Dimensionless Space')
 plt.ylabel('Dimensionless u')
+plt.grid(True)
+plt.tight_layout()  # Adjusts the layout to make space for the legend
+
+plt.show()
+
+# b) Explain
+print("PROBLEM 2b OUTPUT")
+print("i) The values of B0 tend to approach the same value as r increases. As dt approaches dt_max, the solution will end up becoming closer and closer to instability.")
+print("ii) The explicit scheme is faster, implicit is slower. Explicit is less accurate, implicit tends to be more accurate. Explicit scheme is more prone to instability, implicit is often more stable.")
+print("iii) Stability is almost certain for implicit solution, and it is better for more stiff problems that explicit.")
+
 
 
     
