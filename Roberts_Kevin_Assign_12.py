@@ -53,7 +53,9 @@ print()
 r_list = [0.1, 0.25, 0.5]
 A_list = []
 B_list = []
-T = [0, 0.2, 0.4, 0.2, 0]
+T = [0, 0.2, 0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4, 0.2, 0]
+
+
 
 
 for r in r_list:
@@ -71,13 +73,13 @@ for r in r_list:
             B0[0] = r*T[0] + (2 - 2*r)*T[1] + r*T[2] + r*T[0]
         elif i == 4: # for the last row
             A0[4, 4] = 2 + 2*r
-            A0[4, 4-1] = -r
-            B0[4] = r*T[2] + (2 - 2*r)*T[3] + r*T[4] + r*T[4]
+            A0[4, 4-1] = -2*r
+            B0[4] = r*T[3] + (2 - 2*r)*T[4] + r*T[3]
         else: # for the middle rows
             A0[i, i-1] = -r    
             A0[i, i] = 2 + 2*r
             A0[i, i+1] = -r
-            B0[i] = r*T[i-1] + (2 - 2*r)*T[i] + r*T[i-1]
+            B0[i] = r*T[i-1] + (2 - 2*r)*T[i] + r*T[i+1]
 
     A_list.append(A0)
     B_list.append(B0)
@@ -97,10 +99,11 @@ print()
 X_r = np.flip(X, axis=0)
 print("X_r: " + str(X_r))
 print()
-print("X_T: " + str(np.delete(X, 0)))
+X_t = np.delete(X_r, 0)
+print("X_T: " + str(X_t))
 print()
-# js = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-# print(np.concatenate((js[0], X, X_r, js[10])))
+print("T_1,j: " + str(np.concatenate((T[0], X, X_r, T[10]), axis=None)))
+print()
 
 #############
 # PROBLEM 2 #
